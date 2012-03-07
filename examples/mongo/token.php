@@ -9,11 +9,11 @@
  * In reality, you'd probably use a nifty framework to handle most of the crud for you.
  */
 
-require "lib/OAuth2StoragePDO.php";
+require 'OAuth2/MongoServer.php';
 
-$oauth = new OAuth2(new OAuth2StoragePDO());
+$oauth = new OAuth2_MongoServer();
 try {
-	$oauth->grantAccessToken();
-} catch (OAuth2ServerException $oauthError) {
-	$oauthError->sendHttpResponse();
+    $oauth->grantAccessToken();
+} catch (OAuth2_ServerException $oauthError) {
+    $oauthError->sendHttpResponse();
 }

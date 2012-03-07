@@ -7,18 +7,18 @@
  * Obviously not production-ready code, just simple and to the point.
  */
 
-require "lib/OAuth2StoragePdo.php";
+require 'OAuth2/StoragePdo.php'';
 
 if ($_POST && isset($_POST["client_id"]) && isset($_POST["client_secret"]) && isset($_POST["redirect_uri"])) {
-	$oauth = new OAuth2StoragePDO();
-	$oauth->addClient($_POST["client_id"], $_POST["client_secret"], $_POST["redirect_uri"]);
+    $oauth = new OAuth2_StoragePdo($db);
+    $oauth->addClient($_POST["client_id"], $_POST["client_secret"], $_POST["redirect_uri"]);
 }
 
 ?>
 
 <html>
   <head>
-  	<title>Add Client</title>
+      <title>Add Client</title>
   </head>
   <body>
     <form method="post" action="addclient.php">
