@@ -8,8 +8,8 @@
 
 require 'OAuth2/Server.php';
 require 'OAuth2_Storage.php';
-require 'OAuth2_GrantCodeInterface.php';
-require 'OAuth2_RefreshTokensInterface.php';
+require 'OAuth2/GrantCodeInterface.php';
+require 'OAuth2/RefreshTokensInterface.php';
 
 /**
  * WARNING: This example file has not been kept up to date like the PDO example has.
@@ -17,7 +17,8 @@ require 'OAuth2_RefreshTokensInterface.php';
  *
  * Mongo storage engine for the OAuth2 Library.
  */
-class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTokensInterface {
+class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTokensInterface
+{
 
     /**
      * Change this to something unique for your system
@@ -25,36 +26,24 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      */
     const SALT = 'CHANGE_ME!';
 
-    const CONNECTION = 'mongodb://user:pass@mongoserver/mydb';
-    const DB = 'mydb';
-
     /**
-     * @var Mongo
+     * @var MongoDB
      */
     private $db;
 
     /**
-     * Implements OAuth2::__construct().
+     * Implements OAuth2_Server::__construct().
      */
-    public function __construct(PDO $db) {
-
-        $mongo = new Mongo(self::CONNECTION);
-        $this->db = $mongo->selectDB(self::DB);
+    public function __construct(MongoDB $db = null) {
+        $this->db = $db;
     }
 
     /**
-     * Release DB connection during destruct.
-     */
-    function __destruct() {
-        $this->db = NULL; // Release db connection
-    }
-
-    /**
-     * Handle PDO exceptional cases.
+     * Handle MongoException cases.
      */
     private function handleException($e) {
         echo 'Database error: ' . $e->getMessage();
-        exit();
+        exit;
     }
 
     /**
@@ -68,87 +57,102 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      * Redirect URI to be stored.
      */
     public function addClient($client_id, $client_secret, $redirect_uri) {
-        $this->db->clients->insert(array("_id" => $client_id, "pw" => $this->hash($client_secret, $client_id), "redirect_uri" => $redirect_uri));
+        $this->db->clients->insert(
+            array("_id" => $client_id,
+            "pw" => $this->hash($client_secret, $client_id),
+            "redirect_uri" => $redirect_uri)
+        );
     }
 
     /**
-     * Implements IOAuth2Storage::checkClientCredentials().
+     * Implements OAuth2_StorageInterface::checkClientCredentials().
      *
      */
-    public function checkClientCredentials($client_id, $client_secret = NULL) {
-        $client = $this->db->clients->findOne(array("_id" => $client_id, "pw" => $client_secret));
+    public function checkClientCredentials($client_id, $client_secret = null) {
+        $result = $this->db->clients->findOne(
+            array("_id" => $client_id, "pw" => $client_secret)
+        );
         return $this->checkPassword($client_secret, $result['client_secret'], $client_id);
     }
 
     /**
-     * Implements IOAuth2Storage::getRedirectUri().
+     * Implements OAuth2_StorageInterface::getRedirectUri().
      */
     public function getClientDetails($client_id) {
-        $result = $this->db->clients->findOne(array("_id" => $client_id), array("redirect_uri"));
+        return $this->db->clients->findOne(array("_id" => $client_id), array("redirect_uri"));
     }
 
     /**
-     * Implements IOAuth2Storage::getAccessToken().
+     * Implements OAuth2_StorageInterface::getAccessToken().
      */
     public function getAccessToken($oauth_token) {
         return $this->db->tokens->findOne(array("_id" => $oauth_token));
     }
 
     /**
-     * Implements IOAuth2Storage::setAccessToken().
+     * Implements OAuth2_StorageInterface::setAccessToken().
      */
-    public function setAccessToken($oauth_token, $client_id, $user_id, $expires, $scope = NULL) {
-        $this->db->tokens->insert(array("_id" => $oauth_token, "client_id" => $client_id, "expires" => $expires, "scope" => $scope));
+    public function setAccessToken($oauth_token, $client_id, $user_id, $expires, $scope = null) {
+        $this->db->tokens->insert(
+            array("_id" => $oauth_token, "client_id" => $client_id,
+            "expires" => $expires, "scope" => $scope)
+        );
     }
 
     /**
-     * @see IOAuth2Storage::getRefreshToken()
+     * @see OAuth2_StorageInterface::getRefreshToken()
      */
     public function getRefreshToken($refresh_token) {
-        return $this->getToken($refresh_token, TRUE);
+        return $this->getToken($refresh_token, true);
     }
 
     /**
-     * @see IOAuth2Storage::setRefreshToken()
+     * @see OAuth2_StorageInterface::setRefreshToken()
      */
-    public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = NULL) {
-        return $this->setToken($refresh_token, $client_id, $user_id, $expires, $scope, TRUE);
+    public function setRefreshToken($refresh_token, $client_id, $user_id,
+    $expires, $scope = null) {
+        return $this->setToken(
+            $refresh_token, $client_id, $user_id, $expires, $scope, true
+        );
     }
 
     /**
-     * @see IOAuth2Storage::unsetRefreshToken()
+     * @see OAuth2_StorageInterface::unsetRefreshToken()
+     * @throws MongoException
      */
     public function unsetRefreshToken($refresh_token) {
         try {
-            $sql = 'DELETE FROM ' . self::TABLE_TOKENS . ' WHERE refresh_token = :refresh_token';
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(':refresh_token', $refresh_token, PDO::PARAM_STR);
-            $stmt->execute();
-        } catch (PDOException $e) {
+            $this->db->tokens->remove(array('refresh_token' => $refresh_token));
+        } catch (MongoException $e) {
             $this->handleException($e);
         }
     }
 
     /**
-     * Implements IOAuth2Storage::getAuthCode().
+     * Implements OAuth2_StorageInterface::getAuthCode().
      */
     public function getAuthCode($code) {
         $stored_code = $this->db->auth_codes->findOne(array("_id" => $code));
-        return $stored_code !== NULL ? $stored_code : FALSE;
+        return $stored_code !== null ? $stored_code : false;
     }
 
     /**
-     * Implements IOAuth2Storage::setAuthCode().
+     * Implements OAuth2_StorageInterface::setAuthCode().
      */
-    public function setAuthCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope = NULL) {
-        $this->db->auth_codes->insert(array("_id" => $code, "client_id" => $client_id, "redirect_uri" => $redirect_uri, "expires" => $expires, "scope" => $scope));
+    public function setAuthCode($code, $client_id, $user_id, $redirect_uri,
+    $expires, $scope = null) {
+        $this->db->auth_codes->insert(
+            array('_id' => $code, 'client_id' => $client_id,
+            'redirect_uri' => $redirect_uri, 'expires' => $expires,
+            'scope' => $scope)
+        );
     }
 
     /**
-     * @see IOAuth2Storage::checkRestrictedGrantType()
+     * @see OAuth2_StorageInterface::checkRestrictedGrantType()
      */
     public function checkRestrictedGrantType($client_id, $grant_type) {
-        return TRUE; // Not implemented
+        return true; // Not implemented
     }
 
     /**

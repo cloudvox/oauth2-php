@@ -351,14 +351,14 @@ class OAuth2_Server {
      */
     protected function setDefaultOptions() {
         $this->conf = array(
-            self::CONFIG_ACCESS_LIFETIME => self::DEFAULT_ACCESS_TOKEN_LIFETIME,
-            self::CONFIG_REFRESH_LIFETIME => self::DEFAULT_REFRESH_TOKEN_LIFETIME,
-            self::CONFIG_AUTH_LIFETIME => self::DEFAULT_AUTH_CODE_LIFETIME,
-            self::CONFIG_WWW_REALM => self::DEFAULT_WWW_REALM,
-            self::CONFIG_TOKEN_TYPE => self::TOKEN_TYPE_BEARER,
-            self::CONFIG_ENFORCE_INPUT_REDIRECT => FALSE,
-            self::CONFIG_ENFORCE_STATE => FALSE,
-            self::CONFIG_SUPPORTED_SCOPES => array() // This is expected to be passed in on construction. Scopes can be an aribitrary string.
+            self::CONFIG_ACCESS_LIFETIME        => self::DEFAULT_ACCESS_TOKEN_LIFETIME,
+            self::CONFIG_REFRESH_LIFETIME       => self::DEFAULT_REFRESH_TOKEN_LIFETIME,
+            self::CONFIG_AUTH_LIFETIME          => self::DEFAULT_AUTH_CODE_LIFETIME,
+            self::CONFIG_WWW_REALM              => self::DEFAULT_WWW_REALM,
+            self::CONFIG_TOKEN_TYPE             => self::TOKEN_TYPE_BEARER,
+            self::CONFIG_ENFORCE_INPUT_REDIRECT => false,
+            self::CONFIG_ENFORCE_STATE          => false,
+            self::CONFIG_SUPPORTED_SCOPES       => array() // This is expected to be passed in on construction. Scopes can be an aribitrary string.
         );
     }
 
@@ -373,7 +373,7 @@ class OAuth2_Server {
      * @return
      * The value of the variable.
      */
-    public function getVariable($name, $default = NULL) {
+    public function getVariable($name, $default = null) {
         $name = strtolower($name);
 
         return isset($this->conf[$name]) ? $this->conf[$name] : $default;
@@ -423,36 +423,52 @@ class OAuth2_Server {
      *
      * @ingroup oauth2_section_7
      */
-    public function verifyAccessToken($token_param, $scope = NULL) {
+    public function verifyAccessToken($token_param, $scope = null) {
         $tokenType = $this->getVariable(self::CONFIG_TOKEN_TYPE);
         $realm = $this->getVariable(self::CONFIG_WWW_REALM);
-
         if (!$token_param) { // Access token was not provided
-            throw new OAuth2_AuthenticateException(self::HTTP_BAD_REQUEST, $tokenType, $realm, self::ERROR_INVALID_REQUEST, 'The request is missing a required parameter, includes an unsupported parameter or parameter value, repeats the same parameter, uses more than one method for including an access token, or is otherwise malformed.', $scope);
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_BAD_REQUEST, $tokenType, $realm,
+                self::ERROR_INVALID_REQUEST, 'The request is missing a required'.
+                ' parameter, includes an unsupported parameter or parameter value'.
+                ', repeats the same parameter, uses more than one method for '.
+                'including an access token, or is otherwise malformed.', $scope
+            );
         }
-
         // Get the stored token data (from the implementing subclass)
         $token = $this->storage->getAccessToken($token_param);
-        if ($token === NULL) {
-            throw new OAuth2_AuthenticateException(self::HTTP_UNAUTHORIZED, $tokenType, $realm, self::ERROR_INVALID_GRANT, 'The access token provided is invalid.', $scope);
+        if ($token === null) {
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_UNAUTHORIZED, $tokenType, $realm,
+                self::ERROR_INVALID_GRANT, 'The access token provided is invalid.',
+                $scope
+            );
         }
-
         // Check we have a well formed token
         if (!isset($token["expires"]) || !isset($token["client_id"])) {
-            throw new OAuth2_AuthenticateException(self::HTTP_UNAUTHORIZED, $tokenType, $realm, self::ERROR_INVALID_GRANT, 'Malformed token (missing "expires" or "client_id")', $scope);
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_UNAUTHORIZED, $tokenType, $realm,
+                self::ERROR_INVALID_GRANT,
+                'Malformed token (missing "expires" or "client_id")', $scope
+            );
         }
-
         // Check token expiration (expires is a mandatory paramter)
         if (isset($token["expires"]) && time() > $token["expires"]) {
-            throw new OAuth2_AuthenticateException(self::HTTP_UNAUTHORIZED, $tokenType, $realm, self::ERROR_INVALID_GRANT, 'The access token provided has expired.', $scope);
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_UNAUTHORIZED, $tokenType, $realm,
+                self::ERROR_INVALID_GRANT, 'The access token provided has expired.',
+                $scope
+            );
         }
-
         // Check scope, if provided
-        // If token doesn't have a scope, it's NULL/empty, or it's insufficient, then throw an error
+        // If token doesn't have a scope, it's null/empty, or it's insufficient, then throw an error
         if ($scope && (!isset($token["scope"]) || !$token["scope"] || !$this->checkScope($scope, $token["scope"]))) {
-            throw new OAuth2_AuthenticateException(self::HTTP_FORBIDDEN, $tokenType, $realm, self::ERROR_INSUFFICIENT_SCOPE, 'The request requires higher privileges than provided by the access token.', $scope);
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_FORBIDDEN, $tokenType, $realm,
+                self::ERROR_INSUFFICIENT_SCOPE, 'The request requires higher '.
+                'privileges than provided by the access token.', $scope
+            );
         }
-
         return $token;
     }
 
@@ -484,10 +500,19 @@ class OAuth2_Server {
         if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
             $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
         } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-
+            /* Crap like this rubs me raw with PHP `apache_request_headers` */
+            if (function_exists('apache_request_headers')) {
+                $requestHeaders = apache_request_headers();
+            } else {
+                throw new OAuth2_ServerException(
+                    500, 'Header Acquistition is unsupported on this server'
+                );
+            }
             // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+            $requestHeaders = array_combine(
+                array_map('ucwords', array_keys($requestHeaders)),
+                array_values($requestHeaders)
+            );
 
             if (isset($requestHeaders['Authorization'])) {
                 $headers = trim($requestHeaders['Authorization']);
@@ -500,15 +525,25 @@ class OAuth2_Server {
         // Check that exactly one method was used
         $methodsUsed = !empty($headers) + isset($_GET[self::TOKEN_PARAM_NAME]) + isset($_POST[self::TOKEN_PARAM_NAME]);
         if ($methodsUsed > 1) {
-            throw new OAuth2_AuthenticateException(self::HTTP_BAD_REQUEST, $tokenType, $realm, self::ERROR_INVALID_REQUEST, 'Only one method may be used to authenticate at a time (Auth header, GET or POST).');
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_BAD_REQUEST, $tokenType, $realm,
+                self::ERROR_INVALID_REQUEST, 'Only one method may be used to '.
+                'authenticate at a time (Auth header, GET or POST).'
+            );
         } elseif ($methodsUsed == 0) {
-            throw new OAuth2_AuthenticateException(self::HTTP_BAD_REQUEST, $tokenType, $realm, self::ERROR_INVALID_REQUEST, 'The access token was not found.');
+            throw new OAuth2_AuthenticateException(
+                self::HTTP_BAD_REQUEST, $tokenType, $realm,
+                self::ERROR_INVALID_REQUEST, 'The access token was not found.'
+            );
         }
 
         // HEADER: Get the access token from the header
         if (!empty($headers)) {
             if (!preg_match('/' . self::TOKEN_BEARER_HEADER_NAME . '\s(\S+)/', $headers, $matches)) {
-                throw new OAuth2_AuthenticateException(self::HTTP_BAD_REQUEST, $tokenType, $realm, self::ERROR_INVALID_REQUEST, 'Malformed auth header');
+                throw new OAuth2_AuthenticateException(
+                    self::HTTP_BAD_REQUEST, $tokenType, $realm,
+                    self::ERROR_INVALID_REQUEST, 'Malformed auth header'
+                );
             }
 
             return $matches[1];
@@ -517,12 +552,20 @@ class OAuth2_Server {
         // POST: Get the token from POST data
         if (isset($_POST[self::TOKEN_PARAM_NAME])) {
             if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-                throw new OAuth2_AuthenticateException(self::HTTP_BAD_REQUEST, $tokenType, $realm, self::ERROR_INVALID_REQUEST, 'When putting the token in the body, the method must be POST.');
+                throw new OAuth2_AuthenticateException(
+                    self::HTTP_BAD_REQUEST, $tokenType, $realm,
+                    self::ERROR_INVALID_REQUEST, 'When putting the token in '.
+                    'the body, the method must be POST.'
+                );
             }
 
             // IETF specifies content-type. NB: Not all webservers populate this _SERVER variable
             if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] != 'application/x-www-form-urlencoded') {
-                throw new OAuth2_AuthenticateException(self::HTTP_BAD_REQUEST, $tokenType, $realm, self::ERROR_INVALID_REQUEST, 'The content type for POST requests must be "application/x-www-form-urlencoded"');
+                throw new OAuth2_AuthenticateException(
+                    self::HTTP_BAD_REQUEST, $tokenType, $realm,
+                    self::ERROR_INVALID_REQUEST, 'The content type for POST '.
+                    'requests must be "application/x-www-form-urlencoded"'
+                );
             }
 
             return $_POST[self::TOKEN_PARAM_NAME];
@@ -541,7 +584,7 @@ class OAuth2_Server {
      * Required scope to be check with.
      *
      * @return
-     * TRUE if everything in required scope is contained in available scope,
+     * true if everything in required scope is contained in available scope,
      * and False if it isn't.
      *
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-7
@@ -579,9 +622,11 @@ class OAuth2_Server {
      *
      * @ingroup oauth2_section_4
      */
-    public function grantAccessToken(array $inputData = NULL, array $authHeaders = NULL) {
+    public function grantAccessToken(array $inputData = null, array $authHeaders = null) {
         $filters = array(
-            "grant_type" => array("filter" => FILTER_VALIDATE_REGEXP, "options" => array("regexp" => self::GRANT_TYPE_REGEXP), "flags" => FILTER_REQUIRE_SCALAR),
+            "grant_type" => array("filter" => FILTER_VALIDATE_REGEXP,
+                "options" => array("regexp" => self::GRANT_TYPE_REGEXP),
+                "flags" => FILTER_REQUIRE_SCALAR),
             "scope" => array("flags" => FILTER_REQUIRE_SCALAR),
             "code" => array("flags" => FILTER_REQUIRE_SCALAR),
             "redirect_uri" => array("filter" => FILTER_SANITIZE_URL),
@@ -596,104 +641,166 @@ class OAuth2_Server {
         }
 
         // Basic authorization header
-        $authHeaders = isset($authHeaders) ? $authHeaders : $this->getAuthorizationHeader();
+        $authHeaders = isset($authHeaders) ?
+            $authHeaders : $this->getAuthorizationHeader();
 
         // Filter input data
         $input = filter_var_array($inputData, $filters);
 
         // Grant Type must be specified.
         if (!$input["grant_type"]) {
-            throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST, 'Invalid grant_type parameter or parameter missing');
+            throw new OAuth2_ServerException(
+                self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                'Invalid grant_type parameter or parameter missing'
+            );
         }
 
         // Authorize the client
         $client = $this->getClientCredentials($inputData, $authHeaders);
 
-        if ($this->storage->checkClientCredentials($client[0], $client[1]) === FALSE) {
-            throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, 'The client credentials are invalid');
+        if ($this->storage->checkClientCredentials($client[0], $client[1]) === false) {
+            throw new OAuth2_ServerException(
+                self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT,
+                'The client credentials are invalid'
+            );
         }
 
         if (!$this->storage->checkRestrictedGrantType($client[0], $input["grant_type"])) {
-            throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNAUTHORIZED_CLIENT, 'The grant type is unauthorized for this client_id');
+            throw new OAuth2_ServerException(
+                self::HTTP_BAD_REQUEST, self::ERROR_UNAUTHORIZED_CLIENT,
+                'The grant type is unauthorized for this client_id'
+            );
         }
 
         // Do the granting
         switch ($input["grant_type"]) {
             case self::GRANT_TYPE_AUTH_CODE:
                 if (!($this->storage instanceof OAuth2_GrantCodeInterface)) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE);
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                    );
                 }
 
                 if (!$input["code"]) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST, 'Missing parameter. "code" is required');
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        'Missing parameter. "code" is required'
+                    );
                 }
 
-                if ($this->getVariable(self::CONFIG_ENFORCE_INPUT_REDIRECT) && !$input["redirect_uri"]) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST, "The redirect URI parameter is required.");
+                if ($this->getVariable(
+                    self::CONFIG_ENFORCE_INPUT_REDIRECT) && !$input["redirect_uri"]
+                ) {
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        "The redirect URI parameter is required."
+                    );
                 }
 
                 $stored = $this->storage->getAuthCode($input["code"]);
 
                 // Check the code exists
-                if ($stored === NULL || $client[0] != $stored["client_id"]) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT, "Refresh token doesn't exist or is invalid for the client");
+                if ($stored === null || $client[0] != $stored["client_id"]) {
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        'Refresh token doesn\'t exist or is invalid for the client'
+                    );
                 }
 
                 // Validate the redirect URI. If a redirect URI has been provided on input, it must be validated
-                if ($input["redirect_uri"] && !$this->validateRedirectUri($input["redirect_uri"], $stored["redirect_uri"])) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_REDIRECT_URI_MISMATCH, "The redirect URI is missing or do not match");
+                if ($input["redirect_uri"] &&
+                !$this->validateRedirectUri(
+                    $input["redirect_uri"], $stored["redirect_uri"]
+                )) {
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_REDIRECT_URI_MISMATCH,
+                        'The redirect URI is missing or do not match'
+                    );
                 }
 
                 if ($stored["expires"] < time()) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT, "The authorization code has expired");
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        "The authorization code has expired"
+                    );
                 }
                 break;
 
             case self::GRANT_TYPE_USER_CREDENTIALS:
                 if (!($this->storage instanceof OAuth2_GrantUserInterface)) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE);
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                    );
                 }
 
                 if (!$input["username"] || !$input["password"]) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST, 'Missing parameters. "username" and "password" required');
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        'Missing parameters. "username" and "password" required'
+                    );
                 }
 
-                $stored = $this->storage->checkUserCredentials($client[0], $input["username"], $input["password"]);
+                $stored = $this->storage->checkUserCredentials(
+                    $client[0], $input['username'], $input['password']
+                );
 
-                if ($stored === FALSE) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT);
+                if ($stored === false) {
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT
+                    );
                 }
                 break;
 
             case self::GRANT_TYPE_CLIENT_CREDENTIALS:
                 if (!($this->storage instanceof OAuth2_GrantClientInterface)) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE);
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                    );
                 }
 
                 if (empty($client[1])) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, 'The client_secret is mandatory for the "client_credentials" grant type');
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT,
+                        'The client_secret is mandatory for the '.
+                        '"client_credentials" grant type'
+                    );
                 }
                 // NB: We don't need to check for $stored==false, because it was checked above already
-                $stored = $this->storage->checkClientCredentialsGrant($client[0], $client[1]);
+                $stored = $this->storage->checkClientCredentialsGrant(
+                    $client[0], $client[1]
+                );
                 break;
 
             case self::GRANT_TYPE_REFRESH_TOKEN:
                 if (!($this->storage instanceof OAuth2_RefreshTokensInterface)) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE);
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                    );
                 }
 
                 if (!$input["refresh_token"]) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST, 'No "refresh_token" parameter found');
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        'No "refresh_token" parameter found'
+                    );
                 }
 
-                $stored = $this->storage->getRefreshToken($input["refresh_token"]);
+                $stored = $this->storage->getRefreshToken(
+                    $input["refresh_token"]
+                );
 
-                if ($stored === NULL || $client[0] != $stored["client_id"]) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT, 'Invalid refresh token');
+                if ($stored === null || $client[0] != $stored["client_id"]) {
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        'Invalid refresh token'
+                    );
                 }
 
                 if ($stored["expires"] < time()) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT, 'Refresh token has expired');
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        'Refresh token has expired'
+                    );
                 }
 
                 // store the refresh token locally so we can delete it when a new refresh token is generated
@@ -702,9 +809,14 @@ class OAuth2_Server {
 
             case self::GRANT_TYPE_IMPLICIT:
                 /* TODO: NOT YET IMPLEMENTED */
-                throw new OAuth2_ServerException('501 Not Implemented', 'This OAuth2_Server library is not yet complete. This functionality is not implemented yet.');
+                throw new OAuth2_ServerException(
+                    '501 Not Implemented', 'This OAuth2_Server library is not '.
+                    'yet complete. This functionality is not implemented yet.'
+                );
                 if (!($this->storage instanceof OAuth2_GrantImplicitInterface)) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE);
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                    );
                 }
 
                 break;
@@ -712,22 +824,31 @@ class OAuth2_Server {
             // Extended grant types:
             case filter_var($input["grant_type"], FILTER_VALIDATE_URL):
                 if (!($this->storage instanceof OAuth2_GrantExtensionInterface)) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE);
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                    );
                 }
                 $uri = filter_var($input["grant_type"], FILTER_VALIDATE_URL);
-                $stored = $this->storage->checkGrantExtension($uri, $inputData, $authHeaders);
+                $stored = $this->storage->checkGrantExtension(
+                    $uri, $inputData, $authHeaders
+                );
 
-                if ($stored === FALSE) {
-                    throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT);
+                if ($stored === false) {
+                    throw new OAuth2_ServerException(
+                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT
+                    );
                 }
                 break;
 
             default :
-                throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST, 'Invalid grant_type parameter or parameter missing');
+                throw new OAuth2_ServerException(
+                    self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                    'Invalid grant_type parameter or parameter missing'
+                    );
         }
 
         if (!isset($stored["scope"])) {
-            $stored["scope"] = NULL;
+            $stored["scope"] = null;
         }
 
         // Check scope, if provided
@@ -798,7 +919,7 @@ class OAuth2_Server {
      *
      * @ingroup oauth2_section_3
      */
-    public function getAuthorizeParams(array $inputData = NULL) {
+    public function getAuthorizeParams(array $inputData = null) {
         $filters = array(
             "client_id" => array("filter" => FILTER_VALIDATE_REGEXP, "options" => array("regexp" => self::CLIENT_ID_REGEXP), "flags" => FILTER_REQUIRE_SCALAR),
             "response_type" => array("flags" => FILTER_REQUIRE_SCALAR),
@@ -819,7 +940,7 @@ class OAuth2_Server {
 
         // Get client details
         $stored = $this->storage->getClientDetails($input["client_id"]);
-        if ($stored === FALSE) {
+        if ($stored === false) {
             throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, "Client id does not exist");
         }
 
@@ -849,7 +970,7 @@ class OAuth2_Server {
         // Check requested auth response type against interfaces of storage engine
         $reflect = new ReflectionClass($this->storage);
         if (!$reflect->hasConstant('RESPONSE_TYPE_' . strtoupper($input['response_type']))) {
-            throw new OAuth2_RedirectException($input["redirect_uri"], self::ERROR_UNSUPPORTED_RESPONSE_TYPE, NULL, $input["state"]);
+            throw new OAuth2_RedirectException($input["redirect_uri"], self::ERROR_UNSUPPORTED_RESPONSE_TYPE, null, $input["state"]);
         }
 
         // Validate that the requested scope is supported
@@ -874,7 +995,7 @@ class OAuth2_Server {
      * appropriately.
      *
      * @param $is_authorized
-     * TRUE or FALSE depending on whether the user authorized the access.
+     * true or false depending on whether the user authorized the access.
      * @param $user_id
      * Identifier of user who authorized the client
      * @param $params
@@ -894,20 +1015,20 @@ class OAuth2_Server {
      *
      * @ingroup oauth2_section_4
      */
-    public function finishClientAuthorization($is_authorized, $user_id = NULL, $params = array()) {
+    public function finishClientAuthorization($is_authorized, $user_id = null, $params = array()) {
 
         // We repeat this, because we need to re-validate. In theory, this could be POSTed
         // by a 3rd-party (because we are not internally enforcing NONCEs, etc)
         $params = $this->getAuthorizeParams($params);
 
-        $params += array('scope' => NULL, 'state' => NULL);
+        $params += array('scope' => null, 'state' => null);
         extract($params);
 
-        if ($state !== NULL) {
+        if ($state !== null) {
             $result["query"]["state"] = $state;
         }
 
-        if ($is_authorized === FALSE) {
+        if ($is_authorized === false) {
             throw new OAuth2_RedirectException($redirect_uri, self::ERROR_USER_DENIED, "The user denied access to your application", $state);
         } else {
             if ($response_type == self::RESPONSE_TYPE_AUTH_CODE) {
@@ -994,7 +1115,7 @@ class OAuth2_Server {
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-5
      * @ingroup oauth2_section_5
      */
-    protected function createAccessToken($client_id, $user_id, $scope = NULL) {
+    protected function createAccessToken($client_id, $user_id, $scope = null) {
 
         $token = array(
             "access_token" => $this->genAccessToken(),
@@ -1036,7 +1157,7 @@ class OAuth2_Server {
      *
      * @ingroup oauth2_section_4
      */
-    private function createAuthCode($client_id, $user_id, $redirect_uri, $scope = NULL) {
+    private function createAuthCode($client_id, $user_id, $redirect_uri, $scope = null) {
         $code = $this->genAuthCode();
         $this->storage->setAuthCode($code, $client_id, $user_id, $redirect_uri, time() + $this->getVariable(self::CONFIG_AUTH_LIFETIME), $scope);
         return $code;
