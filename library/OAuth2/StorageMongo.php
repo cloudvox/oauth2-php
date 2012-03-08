@@ -6,11 +6,6 @@
  *
  */
 
-require 'OAuth2/Server.php';
-require 'OAuth2_Storage.php';
-require 'OAuth2/GrantCodeInterface.php';
-require 'OAuth2/RefreshTokensInterface.php';
-
 /**
  * WARNING: This example file has not been kept up to date like the PDO example has.
  * FIXME: Update the Mongo examples
@@ -57,7 +52,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      * Redirect URI to be stored.
      */
     public function addClient($client_id, $client_secret, $redirect_uri) {
-        $this->db->clients->insert(
+        $this->db->clients->save(
             array("_id" => $client_id,
             "pw" => $this->hash($client_secret, $client_id),
             "redirect_uri" => $redirect_uri)
@@ -70,9 +65,9 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      */
     public function checkClientCredentials($client_id, $client_secret = null) {
         $result = $this->db->clients->findOne(
-            array("_id" => $client_id, "pw" => $client_secret)
+            array("_id" => $client_id)
         );
-        return $this->checkPassword($client_secret, $result['client_secret'], $client_id);
+        return $this->checkPassword($result['pw'], $client_secret, $client_id);
     }
 
     /**
@@ -103,7 +98,10 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      * @see OAuth2_StorageInterface::getRefreshToken()
      */
     public function getRefreshToken($refresh_token) {
-        return $this->getToken($refresh_token, true);
+        $data = $this->db->tokens->findOne(array("_id" => $refresh_token));
+        $data['refresh_token'] = $data['_id'];
+        unset($data['_id']);
+        return $data;
     }
 
     /**
@@ -111,9 +109,10 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      */
     public function setRefreshToken($refresh_token, $client_id, $user_id,
     $expires, $scope = null) {
-        return $this->setToken(
-            $refresh_token, $client_id, $user_id, $expires, $scope, true
-        );
+        return $this->db->tokens->save(array(
+            '_id' => $refresh_token, 'client_id' => $client_id,
+            'user_id' => $user_id, 'expires' => $expires, 'scope' => $scope
+        ), array('safe' => 1));
     }
 
     /**
@@ -161,8 +160,8 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      * @param string $secret
      * @return string
      */
-    protected function hash($client_secret, $client_id) {
-        return hash('blowfish', $client_id . $client_secret . self::SALT);
+    public function hash($client_secret, $client_id) {
+        return sha1($client_id . $client_secret . self::SALT);
     }
 
     /**

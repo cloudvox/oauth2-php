@@ -802,7 +802,6 @@ class OAuth2_Server {
                         'Refresh token has expired'
                     );
                 }
-
                 // store the refresh token locally so we can delete it when a new refresh token is generated
                 $this->oldRefreshToken = $stored["refresh_token"];
                 break;
