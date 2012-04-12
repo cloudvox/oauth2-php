@@ -1,6 +1,7 @@
 <?php
-
 /**
+ * @category OAuth2
+ * @package  OAuth2
  * OAuth2 errors that require termination of OAuth2 due to
  * an error.
  *
@@ -22,9 +23,7 @@ class OAuth2_ServerException extends Exception {
      */
     public function __construct($http_status_code, $error, $error_description = NULL) {
         parent::__construct($error);
-
         $this->httpCode = $http_status_code;
-
         $this->errorData['error'] = $error;
         if ($error_description) {
             $this->errorData['error_description'] = $error_description;
@@ -54,8 +53,8 @@ class OAuth2_ServerException extends Exception {
      * @ingroup oauth2_error
      */
     public function sendHttpResponse() {
-        header("HTTP/1.1 " . $this->httpCode);
         $this->sendHeaders();
+        header("HTTP/1.1 " . $this->getHttpCode());
         echo (string) $this;
         exit();
     }

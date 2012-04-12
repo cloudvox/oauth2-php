@@ -1,8 +1,7 @@
 <?php
-require 'OAuth2/ServerException.php';
-require 'OAuth2/AuthenticateException.php';
-
 /**
+ * @category OAuth2
+ * @package  OAuth2
  * @mainpage
  * OAuth 2.0 server in PHP, originally written for
  * <a href="http://www.opendining.net/"> Open Dining</a>. Supports
@@ -942,7 +941,6 @@ class OAuth2_Server {
         if ($stored === false) {
             throw new OAuth2_ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, "Client id does not exist");
         }
-
         // Make sure a valid redirect_uri was supplied. If specified, it must match the stored URI.
         // @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.1.2
         // @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1
@@ -1076,28 +1074,12 @@ class OAuth2_Server {
      * @ingroup oauth2_section_4
      */
     private function buildUri($uri, $params) {
-        $parse_url = parse_url($uri);
-
-        // Add our params to the parsed uri
+        $uri = Zend_Uri_Http::fromString($uri);
+        $uri->setQuery($params['fragment']);
         foreach ( $params as $k => $v ) {
-            if (isset($parse_url[$k])) {
-                $parse_url[$k] .= "&" . http_build_query($v);
-            } else {
-                $parse_url[$k] = http_build_query($v);
-            }
+            $uri->setQuery($v);
         }
-
-        // Put humpty dumpty back together
-        return
-            ((isset($parse_url["scheme"])) ? $parse_url["scheme"] . "://" : "")
-            . ((isset($parse_url["user"])) ? $parse_url["user"]
-            . ((isset($parse_url["pass"])) ? ":" . $parse_url["pass"] : "") . "@" : "")
-            . ((isset($parse_url["host"])) ? $parse_url["host"] : "")
-            . ((isset($parse_url["port"])) ? ":" . $parse_url["port"] : "")
-            . ((isset($parse_url["path"])) ? $parse_url["path"] : "")
-            . ((isset($parse_url["query"])) ? "?" . $parse_url["query"] : "")
-            . ((isset($parse_url["fragment"])) ? "#" . $parse_url["fragment"] : "")
-        ;
+        return (string) $uri;
     }
 
     /**

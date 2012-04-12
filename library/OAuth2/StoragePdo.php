@@ -1,6 +1,7 @@
 <?php
-
 /**
+ * @category OAuth2
+ * @package  OAuth2
  * @file
  * Sample OAuth2 Library PDO DB Implementation.
  *
@@ -8,10 +9,6 @@
  * new OAuth2StoragePDO( new PDO('mysql:dbname=mydb;host=localhost', 'user', 'pass') );
  */
 
-require 'OAuth2/Server.php';
-require 'OAuth2/Storage.php';
-require 'OAuth2/GrantCodeInterface.php';
-require 'OAuth2/RefreshTokensInterface.php';
 
 /**
  * PDO storage engine for the OAuth2 Library.

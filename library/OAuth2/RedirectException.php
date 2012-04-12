@@ -1,6 +1,7 @@
 <?php
-
 /**
+ * @category OAuth2
+ * @package  OAuth2
  * Redirect the end-user's user agent with error message.
  *
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1

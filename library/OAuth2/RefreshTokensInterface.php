@@ -1,9 +1,10 @@
 <?php
-
 /**
+ * @category OAuth2
+ * @package  OAuth2
  * Storage engines that want to support refresh tokens should
  * implement this interface.
- * 
+ *
  * @author Dave Rochwerger <catch.dave@gmail.com>
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.5

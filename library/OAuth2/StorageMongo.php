@@ -1,25 +1,24 @@
 <?php
-
 /**
- * @file
- * Sample OAuth2 Library Mongo DB Implementation.
- *
- */
-
-/**
- * WARNING: This example file has not been kept up to date like the PDO example has.
- * FIXME: Update the Mongo examples
- *
+ * @category OAuth2
+ * @package  OAuth2
  * Mongo storage engine for the OAuth2 Library.
  */
 class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTokensInterface
 {
-
+    const RESPONSE_TYPE_TOKEN = 'RESPONSE_TYPE_TOKEN';
     /**
-     * Change this to something unique for your system
+     *
+     *
      * @var string
      */
-    const SALT = 'CHANGE_ME!';
+    public static $CRYPT = '$2a$';
+    /**
+     *
+     *
+     * @var string
+     */
+    public static $LOAD = '15$';
 
     /**
      * @var MongoDB
@@ -31,6 +30,37 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      */
     public function __construct(MongoDB $db = null) {
         $this->db = $db;
+    }
+    /**
+     * @return string
+     */
+    protected function _getSalt()
+    {
+        return substr(
+            str_replace('+', '.', base64_encode(sha1(microtime(true), true)))
+            , 0, 22
+        );
+    }
+    /**
+     *
+     *
+     * @param string $password
+     * @return string
+     */
+    protected function _crypt($client_secret)
+    {
+        return crypt($client_secret, self::$CRYPT . self::$LOAD . $this->_getSalt());
+    }
+    /**
+     *
+     *
+     * @param string $password
+     * @param string $credential
+     * @return boolean
+     */
+    protected function _isValid($client_secret, $pw)
+    {
+        return ($pw == crypt($client_secret, $pw));
     }
 
     /**
@@ -54,7 +84,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     public function addClient($client_id, $client_secret, $redirect_uri) {
         $this->db->clients->save(
             array("_id" => $client_id,
-            "pw" => $this->hash($client_secret, $client_id),
+            "pw" => $this->_crypt($client_secret),
             "redirect_uri" => $redirect_uri)
         );
     }
@@ -67,14 +97,17 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
         $result = $this->db->clients->findOne(
             array("_id" => $client_id)
         );
-        return $this->checkPassword($result['pw'], $client_secret, $client_id);
+        return $this->checkPassword($result['pw'], $client_secret);
     }
 
     /**
      * Implements OAuth2_StorageInterface::getRedirectUri().
      */
     public function getClientDetails($client_id) {
-        return $this->db->clients->findOne(array("_id" => $client_id), array("redirect_uri"));
+        $data = $this->db->clients->findOne(array("_id" => $client_id), array("redirect_uri"));
+        $data['client_id'] = $data['_id'];
+        unset($data['_id']);
+        return $data;
     }
 
     /**
@@ -87,7 +120,8 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     /**
      * Implements OAuth2_StorageInterface::setAccessToken().
      */
-    public function setAccessToken($oauth_token, $client_id, $user_id, $expires, $scope = null) {
+    public function setAccessToken($oauth_token, $client_id, $user_id,
+    $expires, $scope = null) {
         $this->db->tokens->insert(
             array("_id" => $oauth_token, "client_id" => $client_id,
             "expires" => $expires, "scope" => $scope)
@@ -155,16 +189,6 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * Change/override this to whatever your own password hashing method is.
-     *
-     * @param string $secret
-     * @return string
-     */
-    public function hash($client_secret, $client_id) {
-        return sha1($client_id . $client_secret . self::SALT);
-    }
-
-    /**
      * Checks the password.
      * Override this if you need to
      *
@@ -172,7 +196,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
      * @param string $client_secret
      * @param string $actualPassword
      */
-    protected function checkPassword($try, $client_secret, $client_id) {
-        return $try == $this->hash($client_secret, $client_id);
+    protected function checkPassword($try, $client_secret) {
+        return $this->_isValid($client_secret, $try);
     }
 }

@@ -1,6 +1,7 @@
 <?php
-
 /**
+ * @category OAuth2
+ * @package  OAuth2
  * Send an error header with the given realm and an error, if provided.
  * Suitable for the bearer token type.
  *
@@ -9,11 +10,11 @@
  * @ingroup oauth2_error
  */
 class OAuth2_AuthenticateException extends OAuth2_ServerException {
-    
+
     protected $header;
 
     /**
-     * 
+     *
      * @param $http_status_code
      * HTTP status code message as predefined.
      * @param $error
@@ -29,15 +30,15 @@ class OAuth2_AuthenticateException extends OAuth2_ServerException {
      */
     public function __construct($httpCode, $tokenType, $realm, $error, $error_description = NULL, $scope = NULL) {
         parent::__construct($httpCode, $error, $error_description);
-        
+
         if ($scope) {
             $this->errorData['scope'] = $scope;
         }
-        
+
         // Build header
         $this->header = sprintf('WWW-Authenticate: %s realm="%s"', ucwords($tokenType), $realm);
         foreach ( $this->errorData as $key => $value ) {
-            $this->header .= ", $key=\"$value\"";
+            $this->header .= sprintf(', %s="%s"',$key,$value);
         }
     }
 
