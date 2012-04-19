@@ -5,5 +5,8 @@
     "time" : "2012-04-01",
     "description": "OAuth2 Library",
     "keywords": ["library", "OAuth2"],
-    "homepage": "https://github.com/zircote/oauth2-php"
+    "homepage": "https://github.com/zircote/oauth2-php",
+    "autoload": {
+        "psr-0": {"OAuth2": "library"}
+    }
 }
