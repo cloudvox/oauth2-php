@@ -1,0 +1,10 @@
+{
+    "cloudvox/Ifbyphone": {
+        "name": "cloudvox/Ifbyphone",
+        "description": "The Ifbyphone Library",
+        "versions": {
+            "master-dev": { @composer.json },
+            "develop-dev": { @composer.json },
+        }
+    }
+}
