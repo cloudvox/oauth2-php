@@ -1,7 +1,7 @@
 {
-    "cloudvox/Ifbyphone": {
-        "name": "cloudvox/Ifbyphone",
-        "description": "The Ifbyphone Library",
+    "zircote/OAuth2": {
+        "name": "zircote/OAuth2",
+        "description": "An OAuth2 Library for PHP",
         "versions": {
             "master-dev": { @composer.json },
             "develop-dev": { @composer.json },
