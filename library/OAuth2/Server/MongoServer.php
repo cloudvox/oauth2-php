@@ -3,14 +3,20 @@
  * @category OAuth2
  * @package  OAuth2
  */
-class OAuth2_MongoServer extends OAuth2_Server
+namespace OAuth2\Server;
+use OAuth2\Server\Server;
+/**
+ * @category OAuth2
+ * @package  OAuth2
+ */
+class MongoServer extends Server
 {
     /**
      *
-     * @var OAuth2_StorageMongo
+     * @var StorageMongo
      */
     protected $storage;
-    public function __construct(OAuth2_StorageMongo $db)
+    public function __construct(StorageMongo $db)
     {
         parent::__construct($db);
     }
@@ -26,7 +32,7 @@ class OAuth2_MongoServer extends OAuth2_Server
     }
     /**
      *
-     * @see OAuth2_Server::grantAccessToken()
+     * @see Server::grantAccessToken()
      */
     public function grantAccessToken($input = null, $authHeaders = null)
     {

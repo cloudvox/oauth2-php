@@ -2,13 +2,19 @@
 /**
  * @category OAuth2
  * @package  OAuth2
+ */
+namespace OAuth2\Grant;
+use OAuth2\Storage\StorageInterface;
+/**
+ * @category OAuth2
+ * @package  OAuth2
  * Storage engines that support the "Extensible"
  * grant types should implement this interface
  *
  * @author Dave Rochwerger <catch.dave@gmail.com>
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.5
  */
-interface OAuth2_GrantExtensionInterface extends OAuth2_StorageInterface {
+interface GrantExtensionInterface extends StorageInterface {
 
     /**
      * Check any extended grant types.

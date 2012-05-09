@@ -1,12 +1,20 @@
 <?php
 /**
+ *
+ *
+ *
+ * @category OAuth2
+ * @package  OAuth2
+ */
+namespace OAuth2\Storage;
+/**
  * @category OAuth2
  * @package  OAuth2
  * All storage engines need to implement this interface in order to use OAuth2 server
  *
  * @author David Rochwerger <catch.dave@gmail.com>
  */
-interface OAuth2_StorageInterface {
+interface StorageInterface {
 
     /**
      * Make sure that the client credentials is valid.

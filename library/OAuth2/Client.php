@@ -1,5 +1,15 @@
 <?php
 /**
+ *
+ *
+ *
+ * @category OAuth2
+ * @package  OAuth2
+ *
+ */
+namespace OAuth2;
+use OAuth2\Exception\Exception;
+/**
  * @category OAuth2
  * @package  OAuth2
  * OAuth2.0 draft v10 client-side implementation.
@@ -9,7 +19,7 @@
  *
  * @sa <a href="https://github.com/facebook/php-sdk">Facebook PHP SDK</a>.
  */
-abstract class OAuth2_Client {
+abstract class Client {
 
     /**
      * The default Cache Lifetime (in seconds).
@@ -194,7 +204,7 @@ abstract class OAuth2_Client {
      * @return
      * The JSON decoded response object.
      *
-     * @throws OAuth2_Exception
+     * @throws Exception
      */
     public function api($path, $method = 'GET', $params = array()) {
         if (is_array($method) && empty($params)) {
@@ -213,7 +223,7 @@ abstract class OAuth2_Client {
 
         // Results are returned, errors are thrown.
         if (is_array($result) && isset($result['error'])) {
-            $e = new OAuth2_Exception($result);
+            $e = new Exception($result);
             switch ($e->getType()) {
                 // OAuth 2.0 Draft 10 style.
                 case 'invalid_token':
@@ -411,7 +421,7 @@ abstract class OAuth2_Client {
      * @return
      * The JSON decoded response object.
      *
-     * @throws OAuth2_Exception
+     * @throws Exception
      */
     protected function makeOAuth2Request($path, $method = 'GET', $params = array()) {
         if ((!isset($params['oauth_token']) || empty($params['oauth_token'])) && $oauth_token = $this->getAccessToken()) {
@@ -479,7 +489,7 @@ abstract class OAuth2_Client {
         }
 
         if ($result === FALSE) {
-            $e = new OAuth2_Exception(array('code' => curl_errno($ch), 'message' => curl_error($ch)));
+            $e = new Exception(array('code' => curl_errno($ch), 'message' => curl_error($ch)));
             curl_close($ch);
             throw $e;
         }

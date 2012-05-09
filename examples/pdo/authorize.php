@@ -25,7 +25,7 @@ if (!isLoggedIn()) {
 }
  */
 
-$oauth = new OAuth2_Server(new OAuth2_StoragePdo($db));
+$oauth = new \OAuth2\Server\Server(new OAuth2_StoragePdo($db));
 
 if ($_POST) {
     $userId = $_SESSION['user_id']; // Use whatever method you have for identifying users.
@@ -34,7 +34,7 @@ if ($_POST) {
 
 try {
     $auth_params = $oauth->getAuthorizeParams();
-} catch (OAuth2_ServerException $oauthError) {
+} catch (\OAuth2\Server\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }
 

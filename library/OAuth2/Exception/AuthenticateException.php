@@ -2,6 +2,13 @@
 /**
  * @category OAuth2
  * @package  OAuth2
+ *
+ */
+namespace OAuth2\Exception;
+use OAuth2\Exception\ServerException;
+/**
+ * @category OAuth2
+ * @package  OAuth2
  * Send an error header with the given realm and an error, if provided.
  * Suitable for the bearer token type.
  *
@@ -9,7 +16,7 @@
  *
  * @ingroup oauth2_error
  */
-class OAuth2_AuthenticateException extends OAuth2_ServerException {
+class AuthenticateException extends ServerException {
 
     protected $header;
 

@@ -1,119 +1,116 @@
 <?php
-require __DIR__ . '/../lib/OAuth2_Server.php';
-require __DIR__ . '/../lib/IOAuth2Storage.php';
-require __DIR__ . '/../lib/IOAuth2GrantCode.php';
-
+namespace OAuth2Tests;
 /**
- * OAuth2_Server test case.
+ * \OAuth2\Server\Server test case.
  */
-class OAuth2Test extends PHPUnit_Framework_TestCase {
-  
+class OAuth2Test extends \PHPUnit_Framework_TestCase {
+
   /**
-   * @var OAuth2_Server
+   * @var \OAuth2\Server\Server
    */
   private $fixture;
-  
+
   /**
    * The actual token ID is irrelevant, so choose one:
    * @var string
    */
   private $tokenId = 'my_token';
-  
+
   /**
-   * Tests OAuth2_Server->verifyAccessToken() with a missing token
+   * Tests \OAuth2\Server\Server->verifyAccessToken() with a missing token
    */
   public function testVerifyAccessTokenWithNoParam() {
-    $mockStorage = $this->getMock('IOAuth2Storage');
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
     $scope = null;
-    $this->setExpectedException('OAuth2AuthenticateException');
+    $this->setExpectedException('OAuth2\Exception\AuthenticateException');
     $this->fixture->verifyAccessToken('', $scope);
   }
-  
+
   /**
-   * Tests OAuth2_Server->verifyAccessToken() with a invalid token
+   * Tests \OAuth2\Server\Server->verifyAccessToken() with a invalid token
    */
   public function testVerifyAccessTokenInvalidToken() {
-    
+
     // Set up the mock storage to say this token does not exist
-    $mockStorage = $this->getMock('IOAuth2Storage');
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
     $mockStorage->expects($this->once())
       ->method('getAccessToken')
       ->will($this->returnValue(false));
-      
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
+
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
     $scope = null;
-    $this->setExpectedException('OAuth2AuthenticateException');
+    $this->setExpectedException('OAuth2\Exception\AuthenticateException');
     $this->fixture->verifyAccessToken($this->tokenId, $scope);
   }
-  
+
   /**
-   * Tests OAuth2_Server->verifyAccessToken() with a malformed token
-   * 
+   * Tests \OAuth2\Server\Server->verifyAccessToken() with a malformed token
+   *
    * @dataProvider generateMalformedTokens
    */
   public function testVerifyAccessTokenMalformedToken($token) {
-    
+
     // Set up the mock storage to say this token does not exist
-    $mockStorage = $this->getMock('IOAuth2Storage');
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
     $mockStorage->expects($this->once())
       ->method('getAccessToken')
       ->will($this->returnValue($token));
-      
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
+
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
     $scope = null;
-    $this->setExpectedException('OAuth2AuthenticateException');
+    $this->setExpectedException('OAuth2\Exception\AuthenticateException');
     $this->fixture->verifyAccessToken($this->tokenId, $scope);
   }
-  
+
     /**
-   * Tests OAuth2_Server->verifyAccessToken() with different expiry dates
-   * 
+   * Tests \OAuth2\Server\Server->verifyAccessToken() with different expiry dates
+   *
    * @dataProvider generateExpiryTokens
    */
   public function testVerifyAccessTokenCheckExpiry($token, $expectedToPass) {
-    
+
     // Set up the mock storage to say this token does not exist
-    $mockStorage = $this->getMock('IOAuth2Storage');
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
     $mockStorage->expects($this->once())
       ->method('getAccessToken')
       ->will($this->returnValue($token));
-      
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
+
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
     $scope = null;
-    
-    
+
+
     // When valid, we just want any sort of token
-    if ($expectedToPass) { 
+    if ($expectedToPass) {
       $actual = $this->fixture->verifyAccessToken($this->tokenId, $scope);
       $this->assertNotEmpty($actual, "verifyAccessToken() was expected to PASS, but it failed");
       $this->assertInternalType('array', $actual);
     }
     else {
-      $this->setExpectedException('OAuth2AuthenticateException');
+      $this->setExpectedException('OAuth2\Exception\AuthenticateException');
       $this->fixture->verifyAccessToken($this->tokenId, $scope);
     }
   }
-  
+
     /**
-   * Tests OAuth2_Server->verifyAccessToken() with different scopes
-   * 
+   * Tests \OAuth2\Server\Server->verifyAccessToken() with different scopes
+   *
    * @dataProvider generateScopes
    */
   public function testVerifyAccessTokenCheckScope($scopeRequired, $token, $expectedToPass) {
-    
+
     // Set up the mock storage to say this token does not exist
-    $mockStorage = $this->getMock('IOAuth2Storage');
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
     $mockStorage->expects($this->once())
       ->method('getAccessToken')
       ->will($this->returnValue($token));
-      
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
+
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
     // When valid, we just want any sort of token
     if ($expectedToPass) {
       $actual = $this->fixture->verifyAccessToken($this->tokenId, $scopeRequired);
@@ -121,242 +118,242 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
       $this->assertInternalType('array', $actual);
     }
     else {
-      $this->setExpectedException('OAuth2AuthenticateException');
+      $this->setExpectedException('OAuth2\Exception\AuthenticateException');
       $this->fixture->verifyAccessToken($this->tokenId, $scopeRequired);
     }
   }
-  
+
   /**
-   * Tests OAuth2_Server->grantAccessToken() for missing data
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() for missing data
+   *
    * @dataProvider generateEmptyDataForGrant
    */
   public function testGrantAccessTokenMissingData($inputData, $authHeaders) {
-    $mockStorage = $this->getMock('IOAuth2Storage');
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
-    $this->setExpectedException('OAuth2_ServerException');
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
+    $this->setExpectedException('\OAuth2\Exception\ServerException');
     $this->fixture->grantAccessToken($inputData, $authHeaders);
   }
-  
+
   /**
-   * Tests OAuth2_Server->grantAccessToken()
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken()
+   *
    * Tests the different ways client credentials can be provided.
    */
   public function testGrantAccessTokenCheckClientCredentials() {
-    $mockStorage = $this->getMock('IOAuth2Storage');
+    $mockStorage = $this->getMock('\OAuth2\Storage\StorageInterface');
     $mockStorage->expects($this->any())
       ->method('checkClientCredentials')
       ->will($this->returnValue(TRUE)); // Always return true for any combination of user/pass
-    $this->fixture = new OAuth2_Server($mockStorage);
-    
-    $inputData = array('grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE);
+    $this->fixture = new \OAuth2\Server\Server($mockStorage);
+
+    $inputData = array('grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE);
     $authHeaders = array();
-    
+
     // First, confirm that an non-client related error is thrown:
     try {
       $this->fixture->grantAccessToken($inputData, $authHeaders);
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
-    } catch ( OAuth2_ServerException $e ) {
-      $this->assertEquals(OAuth2_Server::ERROR_INVALID_CLIENT, $e->getMessage());
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
+    } catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertEquals(\OAuth2\Server\Server::ERROR_INVALID_CLIENT, $e->getMessage());
     }
 
     // Confirm Auth header
     $authHeaders = array('PHP_AUTH_USER' => 'dev-abc', 'PHP_AUTH_PW' => 'pass');
-    $inputData = array('grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'dev-abc'); // When using auth, client_id must match
+    $inputData = array('grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'dev-abc'); // When using auth, client_id must match
     try {
       $this->fixture->grantAccessToken($inputData, $authHeaders);
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
-    } catch ( OAuth2_ServerException $e ) {
-      $this->assertNotEquals(OAuth2_Server::ERROR_INVALID_CLIENT, $e->getMessage());
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
+    } catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertNotEquals(\OAuth2\Server\Server::ERROR_INVALID_CLIENT, $e->getMessage());
     }
-    
+
     // Confirm GET/POST
     $authHeaders = array();
-    $inputData = array('grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'dev-abc', 'client_secret' => 'foo'); // When using auth, client_id must match
+    $inputData = array('grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'dev-abc', 'client_secret' => 'foo'); // When using auth, client_id must match
     try {
       $this->fixture->grantAccessToken($inputData, $authHeaders);
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
-    } catch ( OAuth2_ServerException $e ) {
-      $this->assertNotEquals(OAuth2_Server::ERROR_INVALID_CLIENT, $e->getMessage());
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
+    } catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertNotEquals(\OAuth2\Server\Server::ERROR_INVALID_CLIENT, $e->getMessage());
     }
   }
-  
+
   /**
-   * Tests OAuth2_Server->grantAccessToken() with Auth code grant
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with Auth code grant
+   *
    */
   public function testGrantAccessTokenWithGrantAuthCodeMandatoryParams() {
-    $mockStorage = $this->createBaseMock('IOAuth2GrantCode');
-    $inputData = array('grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'a', 'client_secret' => 'b');
+    $mockStorage = $this->createBaseMock('OAuth2\Grant\GrantCodeInterface');
+    $inputData = array('grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'a', 'client_secret' => 'b');
     $fakeAuthCode = array('client_id' => $inputData['client_id'], 'redirect_uri' => '/foo', 'expires' => time() + 60);
     $fakeAccessToken = array('access_token' => 'abcde');
-    
+
     // Ensure redirect URI and auth-code is mandatory
     try {
-      $this->fixture = new OAuth2_Server($mockStorage);
-      $this->fixture->setVariable(OAuth2_Server::CONFIG_ENFORCE_INPUT_REDIRECT, true); // Only required when this is set
+      $this->fixture = new \OAuth2\Server\Server($mockStorage);
+      $this->fixture->setVariable(\OAuth2\Server\Server::CONFIG_ENFORCE_INPUT_REDIRECT, true); // Only required when this is set
       $this->fixture->grantAccessToken($inputData + array('code' => 'foo'), array());
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
-    } catch ( OAuth2_ServerException $e ) {
-      $this->assertEquals(OAuth2_Server::ERROR_INVALID_REQUEST, $e->getMessage());
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
+    } catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertEquals(\OAuth2\Server\Server::ERROR_INVALID_REQUEST, $e->getMessage());
     }
     try {
-      $this->fixture = new OAuth2_Server($mockStorage);
+      $this->fixture = new \OAuth2\Server\Server($mockStorage);
       $this->fixture->grantAccessToken($inputData + array('redirect_uri' => 'foo'), array());
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
-    } catch ( OAuth2_ServerException $e ) {
-      $this->assertEquals(OAuth2_Server::ERROR_INVALID_REQUEST, $e->getMessage());
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
+    } catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertEquals(\OAuth2\Server\Server::ERROR_INVALID_REQUEST, $e->getMessage());
     }
   }
-  
+
    /**
-   * Tests OAuth2_Server->grantAccessToken() with Auth code grant
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with Auth code grant
+   *
    */
   public function testGrantAccessTokenWithGrantAuthCodeNoToken() {
-    $mockStorage = $this->createBaseMock('IOAuth2GrantCode');
-    $inputData = array('grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'a', 'client_secret' => 'b', 'redirect_uri' => 'foo', 'code'=> 'foo');
-    
+    $mockStorage = $this->createBaseMock('OAuth2\Grant\GrantCodeInterface');
+    $inputData = array('grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'a', 'client_secret' => 'b', 'redirect_uri' => 'foo', 'code'=> 'foo');
+
     // Ensure missing auth code raises an error
     try {
-      $this->fixture = new OAuth2_Server($mockStorage);
+      $this->fixture = new \OAuth2\Server\Server($mockStorage);
       $this->fixture->grantAccessToken($inputData + array(), array());
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
     }
-    catch ( OAuth2_ServerException $e ) {
-      $this->assertEquals(OAuth2_Server::ERROR_INVALID_GRANT, $e->getMessage());
+    catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertEquals(\OAuth2\Server\Server::ERROR_INVALID_GRANT, $e->getMessage());
     }
   }
-  
+
   /**
-   * Tests OAuth2_Server->grantAccessToken() with checks the redirect URI
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with checks the redirect URI
+   *
    */
   public function testGrantAccessTokenWithGrantAuthCodeRedirectChecked() {
-    $inputData = array('redirect_uri' => 'http://www.crossdomain.com/my/subdir', 'grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'my_little_app', 'client_secret' => 'b', 'code'=> 'foo');
+    $inputData = array('redirect_uri' => 'http://www.crossdomain.com/my/subdir', 'grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE, 'client_id' => 'my_little_app', 'client_secret' => 'b', 'code'=> 'foo');
     $storedToken = array('redirect_uri' => 'http://www.example.com', 'client_id' => 'my_little_app', 'expires' => time() + 60);
-    
-    $mockStorage = $this->createBaseMock('IOAuth2GrantCode');
+
+    $mockStorage = $this->createBaseMock('OAuth2\Grant\GrantCodeInterface');
     $mockStorage->expects($this->any())
       ->method('getAuthCode')
       ->will($this->returnValue($storedToken));
-      
+
     // Ensure that the redirect_uri is checked
     try {
-      $this->fixture = new OAuth2_Server($mockStorage);
+      $this->fixture = new \OAuth2\Server\Server($mockStorage);
       $this->fixture->grantAccessToken($inputData, array());
-      
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
+
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
     }
-    catch ( OAuth2_ServerException $e ) {
-      $this->assertEquals(OAuth2_Server::ERROR_REDIRECT_URI_MISMATCH, $e->getMessage());
+    catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertEquals(\OAuth2\Server\Server::ERROR_REDIRECT_URI_MISMATCH, $e->getMessage());
     }
   }
-  
+
     /**
-   * Tests OAuth2_Server->grantAccessToken() with checks the client ID is matched
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with checks the client ID is matched
+   *
    */
   public function testGrantAccessTokenWithGrantAuthCodeClientIdChecked() {
-    $inputData = array('client_id' => 'another_app', 'grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE, 'redirect_uri' => 'http://www.example.com/my/subdir', 'client_secret' => 'b', 'code'=> 'foo');
+    $inputData = array('client_id' => 'another_app', 'grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE, 'redirect_uri' => 'http://www.example.com/my/subdir', 'client_secret' => 'b', 'code'=> 'foo');
     $storedToken = array('client_id' => 'my_little_app', 'redirect_uri' => 'http://www.example.com', 'expires' => time() + 60);
-    
-    $mockStorage = $this->createBaseMock('IOAuth2GrantCode');
+
+    $mockStorage = $this->createBaseMock('OAuth2\Grant\GrantCodeInterface');
     $mockStorage->expects($this->any())
       ->method('getAuthCode')
       ->will($this->returnValue($storedToken));
-      
+
     // Ensure the client ID is checked
     try {
-      $this->fixture = new OAuth2_Server($mockStorage);
+      $this->fixture = new \OAuth2\Server\Server($mockStorage);
       $this->fixture->grantAccessToken($inputData, array());
-      
-      $this->fail('The expected exception OAuth2_ServerException was not thrown');
+
+      $this->fail('The expected exception \OAuth2\Exception\ServerException was not thrown');
     }
-    catch ( OAuth2_ServerException $e ) {
-      $this->assertEquals(OAuth2_Server::ERROR_INVALID_GRANT, $e->getMessage());
+    catch ( \OAuth2\Exception\ServerException $e ) {
+      $this->assertEquals(\OAuth2\Server\Server::ERROR_INVALID_GRANT, $e->getMessage());
     }
   }
-  
+
   /**
-   * Tests OAuth2_Server->grantAccessToken() with implicit
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with implicit
+   *
    */
   public function testGrantAccessTokenWithGrantImplicit() {
     $this->markTestIncomplete ( "grantAccessToken test not implemented" );
-    
+
     $this->fixture->grantAccessToken(/* parameters */);
   }
-  
+
     /**
-   * Tests OAuth2_Server->grantAccessToken() with user credentials
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with user credentials
+   *
    */
   public function testGrantAccessTokenWithGrantUser() {
     $this->markTestIncomplete ( "grantAccessToken test not implemented" );
-    
+
     $this->fixture->grantAccessToken(/* parameters */);
   }
-  
-  
+
+
     /**
-   * Tests OAuth2_Server->grantAccessToken() with client credentials
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with client credentials
+   *
    */
   public function testGrantAccessTokenWithGrantClient() {
     $this->markTestIncomplete ( "grantAccessToken test not implemented" );
-    
+
     $this->fixture->grantAccessToken(/* parameters */);
   }
-  
+
     /**
-   * Tests OAuth2_Server->grantAccessToken() with refresh token
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with refresh token
+   *
    */
   public function testGrantAccessTokenWithGrantRefresh() {
     $this->markTestIncomplete ( "grantAccessToken test not implemented" );
-    
+
     $this->fixture->grantAccessToken(/* parameters */);
   }
-  
+
     /**
-   * Tests OAuth2_Server->grantAccessToken() with extension
-   * 
+   * Tests \OAuth2\Server\Server->grantAccessToken() with extension
+   *
    */
   public function testGrantAccessTokenWithGrantExtension() {
     $this->markTestIncomplete ( "grantAccessToken test not implemented" );
-    
+
     $this->fixture->grantAccessToken(/* parameters */);
   }
-  
+
   /**
-   * Tests OAuth2_Server->getAuthorizeParams()
+   * Tests \OAuth2\Server\Server->getAuthorizeParams()
    */
   public function testGetAuthorizeParams() {
     // TODO Auto-generated OAuth2Test->testGetAuthorizeParams()
     $this->markTestIncomplete ( "getAuthorizeParams test not implemented" );
-    
+
     $this->fixture->getAuthorizeParams(/* parameters */);
-  
+
   }
-  
+
   /**
-   * Tests OAuth2_Server->finishClientAuthorization()
+   * Tests \OAuth2\Server\Server->finishClientAuthorization()
    */
   public function testFinishClientAuthorization() {
     // TODO Auto-generated OAuth2Test->testFinishClientAuthorization()
     $this->markTestIncomplete ( "finishClientAuthorization test not implemented" );
-    
+
     $this->fixture->finishClientAuthorization(/* parameters */);
-  
+
   }
 
   // Utility methods
-  
+
   /**
-   * 
+   *
    * @param string $interfaceName
    */
   protected function createBaseMock($interfaceName) {
@@ -367,15 +364,15 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
     $mockStorage->expects($this->any())
       ->method('checkRestrictedGrantType')
       ->will($this->returnValue(TRUE)); // Always return true for any combination of user/pass
-      
+
      return $mockStorage;
   }
-  
+
   // Data Providers below:
-  
+
   /**
    * Dataprovider for testVerifyAccessTokenMalformedToken().
-   * 
+   *
    * Produces malformed access tokens
    */
   public function generateMalformedTokens() {
@@ -386,10 +383,10 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
       array(array('something' => 6)), // missing both 'expires' and 'client_id'
     );
   }
-  
+
   /**
    * Dataprovider for testVerifyAccessTokenCheckExpiry().
-   * 
+   *
    * Produces malformed access tokens
    */
   public function generateExpiryTokens() {
@@ -403,15 +400,15 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
       array(array('client_id' => 'blah', 'expires' => time() + (10 * 365 * 86400)), TRUE),  // 10 years should be valid
     );
   }
-  
+
   /**
    * Dataprovider for testVerifyAccessTokenCheckExpiry().
-   * 
+   *
    * Produces malformed access tokens
    */
   public function generateScopes() {
     $baseToken = array('client_id' => 'blah', 'expires' => time() + 60);
-    
+
     return array(
       array(null,   $baseToken + array(),                               TRUE), // missing scope is valif
       array(null,   $baseToken + array('scope' => null),                TRUE), // null scope is valid
@@ -419,10 +416,10 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
       array('read', $baseToken + array('scope' => 'read'),              TRUE), // exact same scope is valid
       array('read', $baseToken + array('scope' => ' read '),            TRUE), // exact same scope is valid
       array(' read ', $baseToken + array('scope' => 'read'),            TRUE), // exact same scope is valid
-      array('read', $baseToken + array('scope' => 'read write delete'), TRUE), // contains scope 
-      array('read', $baseToken + array('scope' => 'write read delete'), TRUE), // contains scope 
+      array('read', $baseToken + array('scope' => 'read write delete'), TRUE), // contains scope
+      array('read', $baseToken + array('scope' => 'write read delete'), TRUE), // contains scope
       array('read', $baseToken + array('scope' => 'delete write read'), TRUE), // contains scope
-      
+
       // Invalid combinations
       array('read', $baseToken + array('scope' => 'write'),            FALSE),
       array('read', $baseToken + array('scope' => 'apple banana'),     FALSE),
@@ -432,9 +429,9 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
       array('read', $baseToken + array('scope' => ''),                 FALSE),
     );
   }
-  
+
   /**
-   * Provider for OAuth2_Server->grantAccessToken()
+   * Provider for \OAuth2\Server\Server->grantAccessToken()
    */
   public function generateEmptyDataForGrant() {
     return array(
@@ -442,7 +439,7 @@ class OAuth2Test extends PHPUnit_Framework_TestCase {
         array(), array()
       ),
       array(
-        array(), array('grant_type' => OAuth2_Server::GRANT_TYPE_AUTH_CODE) // grant_type in auth headers should be ignored
+        array(), array('grant_type' => \OAuth2\Server\Server::GRANT_TYPE_AUTH_CODE) // grant_type in auth headers should be ignored
       ),
       array(
         array('not_grant_type' => 5), array()

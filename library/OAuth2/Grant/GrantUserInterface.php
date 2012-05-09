@@ -2,13 +2,19 @@
 /**
  * @category OAuth2
  * @package  OAuth2
+ */
+namespace OAuth2\Grant;
+use OAuth2\Storage\StorageInterface;
+/**
+ * @category OAuth2
+ * @package  OAuth2
  * Storage engines that support the "Resource Owner Password Credentials"
  * grant type should implement this interface
  *
  * @author Dave Rochwerger <catch.dave@gmail.com>
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.3
  */
-interface OAuth2_GrantUserInterface extends OAuth2_StorageInterface {
+interface GrantUserInterface extends StorageInterface {
 
     /**
      * Grant access tokens for basic user credentials.

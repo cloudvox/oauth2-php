@@ -1,5 +1,15 @@
 <?php
 /**
+ *
+ *
+ *
+ * @category OAuth2
+ * @package  OAuth2
+ */
+namespace OAuth2\Exception;
+use OAuth2\Exception\ServerException,
+    OAuth2\Server\Server;
+/**
  * @category OAuth2
  * @package  OAuth2
  * Redirect the end-user's user agent with error message.
@@ -8,7 +18,7 @@
  *
  * @ingroup oauth2_error
  */
-class OAuth2_RedirectException extends OAuth2_ServerException {
+class RedirectException extends ServerException {
 
     protected $redirectUri;
 
@@ -31,7 +41,7 @@ class OAuth2_RedirectException extends OAuth2_ServerException {
      * @ingroup oauth2_error
      */
     public function __construct($redirect_uri, $error, $error_description = NULL, $state = NULL) {
-        parent::__construct(OAuth2_Server::HTTP_FOUND, $error, $error_description);
+        parent::__construct(Server::HTTP_FOUND, $error, $error_description);
 
         $this->redirectUri = $redirect_uri;
         if ($state) {

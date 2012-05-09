@@ -1,5 +1,14 @@
 <?php
 /**
+ *
+ *
+ *
+ * @category OAuth2
+ * @package  OAuth2
+ */
+namespace OAuth2;
+use OAuth2\StorageInterface;
+/**
  * @category OAuth2
  * @package  OAuth2
  * Storage engines that want to support refresh tokens should
@@ -9,7 +18,7 @@
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.5
  */
-interface OAuth2_RefreshTokensInterface extends OAuth2_StorageInterface {
+interface RefreshTokensInterface extends StorageInterface {
 
     /**
      * Grant refresh access tokens.

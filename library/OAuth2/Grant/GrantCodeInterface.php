@@ -2,13 +2,20 @@
 /**
  * @category OAuth2
  * @package  OAuth2
+ */
+namespace OAuth2\Grant;
+use OAuth2\Storage\StorageInterface,
+    OAuth2\Server\Server;
+/**
+ * @category OAuth2
+ * @package  OAuth2
  * Storage engines that support the "Authorization Code"
  * grant type should implement this interface
  *
  * @author Dave Rochwerger <catch.dave@gmail.com>
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1
  */
-interface OAuth2_GrantCodeInterface extends OAuth2_StorageInterface {
+interface GrantCodeInterface extends StorageInterface {
 
     /**
      * The Authorization Code grant type supports a response type of "code".
@@ -17,14 +24,14 @@ interface OAuth2_GrantCodeInterface extends OAuth2_StorageInterface {
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.4.1
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2
      */
-    const RESPONSE_TYPE_CODE = OAuth2_Server::RESPONSE_TYPE_AUTH_CODE;
+    const RESPONSE_TYPE_CODE = Server::RESPONSE_TYPE_AUTH_CODE;
 
     /**
      * Fetch authorization code data (probably the most common grant type).
      *
      * Retrieve the stored data for the given authorization code.
      *
-     * Required for OAuth2_Server::GRANT_TYPE_AUTH_CODE.
+     * Required for Server::GRANT_TYPE_AUTH_CODE.
      *
      * @param $code
      * Authorization code to be check with.
@@ -51,7 +58,7 @@ interface OAuth2_GrantCodeInterface extends OAuth2_StorageInterface {
      * any sort of success/failure, so you should bail out of the script
      * and provide a descriptive fail message.
      *
-     * Required for OAuth2_Server::GRANT_TYPE_AUTH_CODE.
+     * Required for Server::GRANT_TYPE_AUTH_CODE.
      *
      * @param $code
      * Authorization code to be stored.

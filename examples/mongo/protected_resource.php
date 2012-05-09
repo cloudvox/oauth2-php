@@ -11,13 +11,13 @@
 
 require 'OAuth2/StorageMongo.php';
 
-$token = isset($_GET[OAuth2_Server::TOKEN_PARAM_NAME]) ? $_GET[OAuth2_Server::TOKEN_PARAM_NAME] : null;
+$token = isset($_GET[\OAuth2\Server\Server::TOKEN_PARAM_NAME]) ? $_GET[\OAuth2\Server\Server::TOKEN_PARAM_NAME] : null;
 
 try {
-    $oauth = new OAuth2_Server(new OAuth2_StorageMongo());
+    $oauth = new \OAuth2\Server\Server(new OAuth2_StorageMongo());
     $token = $oauth->getBearerToken();
     $oauth->verifyAccessToken($token);
-} catch (OAuth2_ServerException $oauthError) {
+} catch (\OAuth2\Server\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }
 

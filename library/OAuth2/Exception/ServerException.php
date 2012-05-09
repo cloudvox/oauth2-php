@@ -1,12 +1,21 @@
 <?php
 /**
+ *
+ *
+ *
+ * @category OAuth2
+ * @package  OAuth2
+ */
+namespace OAuth2\Exception;
+use OAuth2\Exception\Exception;
+/**
  * @category OAuth2
  * @package  OAuth2
  * OAuth2 errors that require termination of OAuth2 due to
  * an error.
  *
  */
-class OAuth2_ServerException extends Exception {
+class ServerException extends Exception {
 
     protected $httpCode;
     protected $errorData = array();

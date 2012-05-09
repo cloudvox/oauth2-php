@@ -2,13 +2,19 @@
 /**
  * @category OAuth2
  * @package  OAuth2
+ */
+namespace OAuth2\Grant;
+use OAuth2\Storage\StorageInterface;
+/**
+ * @category OAuth2
+ * @package  OAuth2
  * Storage engines that support the "Client Credentials"
  * grant type should implement this interface
  *
  * @author Dave Rochwerger <catch.dave@gmail.com>
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.4
  */
-interface OAuth2_GrantClientInterface extends OAuth2_StorageInterface {
+interface GrantClientInterface extends StorageInterface {
 
     /**
      * Required for OAuth2::GRANT_TYPE_CLIENT_CREDENTIALS.

@@ -1,10 +1,21 @@
 <?php
 /**
+ *
+ *
+ *
+ * @category OAuth2
+ * @package  OAuth2
+ */
+namespace OAuth2;
+use OAuth2\Grant\GrantCodeInterface,
+    OAuth2\RefreshTokensInterface,
+    MongoException;
+/**
  * @category OAuth2
  * @package  OAuth2
  * Mongo storage engine for the OAuth2 Library.
  */
-class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTokensInterface
+class StorageMongo implements GrantCodeInterface, RefreshTokensInterface
 {
     const RESPONSE_TYPE_TOKEN = 'RESPONSE_TYPE_TOKEN';
     /**
@@ -26,7 +37,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     private $db;
 
     /**
-     * Implements OAuth2_Server::__construct().
+     * Implements Server::__construct().
      */
     public function __construct(MongoDB $db = null) {
         $this->db = $db;
@@ -90,7 +101,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * Implements OAuth2_StorageInterface::checkClientCredentials().
+     * Implements StorageInterface::checkClientCredentials().
      *
      */
     public function checkClientCredentials($client_id, $client_secret = null) {
@@ -101,7 +112,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * Implements OAuth2_StorageInterface::getRedirectUri().
+     * Implements StorageInterface::getRedirectUri().
      */
     public function getClientDetails($client_id) {
         $data = $this->db->clients->findOne(array("_id" => $client_id), array("redirect_uri"));
@@ -111,14 +122,14 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * Implements OAuth2_StorageInterface::getAccessToken().
+     * Implements StorageInterface::getAccessToken().
      */
     public function getAccessToken($oauth_token) {
         return $this->db->tokens->findOne(array("_id" => $oauth_token));
     }
 
     /**
-     * Implements OAuth2_StorageInterface::setAccessToken().
+     * Implements StorageInterface::setAccessToken().
      */
     public function setAccessToken($oauth_token, $client_id, $user_id,
     $expires, $scope = null) {
@@ -129,7 +140,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * @see OAuth2_StorageInterface::getRefreshToken()
+     * @see StorageInterface::getRefreshToken()
      */
     public function getRefreshToken($refresh_token) {
         $data = $this->db->tokens->findOne(array("_id" => $refresh_token));
@@ -139,7 +150,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * @see OAuth2_StorageInterface::setRefreshToken()
+     * @see StorageInterface::setRefreshToken()
      */
     public function setRefreshToken($refresh_token, $client_id, $user_id,
     $expires, $scope = null) {
@@ -150,7 +161,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * @see OAuth2_StorageInterface::unsetRefreshToken()
+     * @see StorageInterface::unsetRefreshToken()
      * @throws MongoException
      */
     public function unsetRefreshToken($refresh_token) {
@@ -162,7 +173,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * Implements OAuth2_StorageInterface::getAuthCode().
+     * Implements StorageInterface::getAuthCode().
      */
     public function getAuthCode($code) {
         $stored_code = $this->db->auth_codes->findOne(array("_id" => $code));
@@ -170,7 +181,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * Implements OAuth2_StorageInterface::setAuthCode().
+     * Implements StorageInterface::setAuthCode().
      */
     public function setAuthCode($code, $client_id, $user_id, $redirect_uri,
     $expires, $scope = null) {
@@ -182,7 +193,7 @@ class OAuth2_StorageMongo implements OAuth2_GrantCodeInterface, OAuth2_RefreshTo
     }
 
     /**
-     * @see OAuth2_StorageInterface::checkRestrictedGrantType()
+     * @see StorageInterface::checkRestrictedGrantType()
      */
     public function checkRestrictedGrantType($client_id, $grant_type) {
         return true; // Not implemented

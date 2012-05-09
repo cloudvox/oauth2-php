@@ -19,7 +19,7 @@ if ($_POST) {
 
 try {
     $auth_params = $oauth->getAuthorizeParams();
-} catch (OAuth2_ServerException $oauthError) {
+} catch (\OAuth2\Exception\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }
 

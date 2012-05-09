@@ -14,6 +14,6 @@ require 'OAuth2/MongoServer.php';
 $oauth = new OAuth2_MongoServer();
 try {
     $oauth->grantAccessToken();
-} catch (OAuth2_ServerException $oauthError) {
+} catch (\OAuth2\Server\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }
