@@ -7,7 +7,7 @@
  * @package  OAuth2
  */
 namespace OAuth2;
-use OAuth2\StorageInterface;
+use OAuth2\Storage\StorageInterface;
 /**
  * @category OAuth2
  * @package  OAuth2

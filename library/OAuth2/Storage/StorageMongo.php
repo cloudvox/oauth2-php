@@ -6,10 +6,11 @@
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2;
+namespace OAuth2\Storage;
 use OAuth2\Grant\GrantCodeInterface,
     OAuth2\RefreshTokensInterface,
-    MongoException;
+    MongoException,
+    MongoDB;
 /**
  * @category OAuth2
  * @package  OAuth2
