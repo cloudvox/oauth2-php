@@ -81,6 +81,7 @@ $package->setOptions(
             '.buildpath',
             'releases',
             '.settings',
+            'vendor/*',
             '*.tgz'
         )
     )
@@ -157,7 +158,7 @@ foreach ($files as $file) {
 }
 
 
-$package->setPhpDep('5.3.2');
+$package->setPhpDep('5.3.3');
 
 $package->setPearInstallerDep('1.7.0');
 $package->generateContents();
