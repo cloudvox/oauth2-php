@@ -8,7 +8,7 @@
  * Simply pass in a configured PDO class, eg:
  * new OAuth2StoragePDO( new PDO('mysql:dbname=mydb;host=localhost', 'user', 'pass') );
  */
-namespace OAuth2;
+namespace OAuth2\Storage;
 use OAuth2\Grant\GrantCodeInterface,
     OAuth2\RefreshTokensInterface,
     PDOException,

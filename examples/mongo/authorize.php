@@ -9,9 +9,10 @@
  * In reality, you'd probably use a nifty framework to handle most of the crud for you.
  */
 
-require 'OAuth2/MongoServer.php';
+require 'OAuth2/Server/MongoServer.php';
+require_once 'OAuth2/Exception/ServerException.php';
 
-$oauth = new OAuth2_MongoServer();
+$oauth = new OAuth2\Server\MongoServer();
 
 if ($_POST) {
     $oauth->finishClientAuthorization($_POST["accept"] == "Yep", $_POST);
@@ -19,7 +20,7 @@ if ($_POST) {
 
 try {
     $auth_params = $oauth->getAuthorizeParams();
-} catch (\OAuth2\Exception\ServerException $oauthError) {
+} catch (OAuth2\Exception\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }
 

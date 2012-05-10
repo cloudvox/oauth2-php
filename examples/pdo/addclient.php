@@ -6,11 +6,20 @@
  *
  * Obviously not production-ready code, just simple and to the point.
  */
+require 'OAuth2/Storage/StoragePdo.php';
 
-require 'OAuth2/StoragePdo.php'';
+$dsn = 'mysql:dbname=testdb;host=127.0.0.1';
+$user = 'dbuser';
+$password = 'dbpass';
+
+try {
+    $db = new PDO($dsn, $user, $password);
+} catch (PDOException $e) {
+    echo 'Connection failed: ' . $e->getMessage();
+}
 
 if ($_POST && isset($_POST["client_id"]) && isset($_POST["client_secret"]) && isset($_POST["redirect_uri"])) {
-    $oauth = new OAuth2_StoragePdo($db);
+    $oauth = new OAuth2\Storage\StoragePdo($db);
     $oauth->addClient($_POST["client_id"], $_POST["client_secret"], $_POST["redirect_uri"]);
 }
 

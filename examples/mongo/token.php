@@ -9,11 +9,12 @@
  * In reality, you'd probably use a nifty framework to handle most of the crud for you.
  */
 
-require 'OAuth2/MongoServer.php';
+require 'OAuth2/Server/MongoServer.php';
+require 'OAuth2/Excepton/ServerException.php';
 
-$oauth = new OAuth2_MongoServer();
+$oauth = new OAuth2\Server\MongoServer();
 try {
     $oauth->grantAccessToken();
-} catch (\OAuth2\Server\ServerException $oauthError) {
+} catch (OAuth2\Exception\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }

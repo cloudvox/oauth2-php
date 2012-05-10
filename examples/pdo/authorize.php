@@ -10,8 +10,19 @@
 
 // Clickjacking prevention (supported by IE8+, FF3.6.9+, Opera10.5+, Safari4+, Chrome 4.1.249.1042+)
 header('X-Frame-Options: DENY');
+require 'OAuth2/Storage/StoragePdo.php';
+require_once 'OAuth2/Server/Server.php';
+require_once 'OAuth2/Exception/ServerException.php';
 
-require 'OAuth2/StoragePdo.php';
+$dsn = 'mysql:dbname=testdb;host=127.0.0.1';
+$user = 'dbuser';
+$password = 'dbpass';
+
+try {
+    $db = new PDO($dsn, $user, $password);
+} catch (PDOException $e) {
+    echo 'Connection failed: ' . $e->getMessage();
+}
 
 /*
  * You would need to authenticate the user before authorization.
@@ -25,7 +36,7 @@ if (!isLoggedIn()) {
 }
  */
 
-$oauth = new \OAuth2\Server\Server(new OAuth2_StoragePdo($db));
+$oauth = new OAuth2\Server\Server(new OAuth2\Storage\StoragePdo($db));
 
 if ($_POST) {
     $userId = $_SESSION['user_id']; // Use whatever method you have for identifying users.
@@ -34,7 +45,7 @@ if ($_POST) {
 
 try {
     $auth_params = $oauth->getAuthorizeParams();
-} catch (\OAuth2\Server\ServerException $oauthError) {
+} catch (OAuth2\Exception\ServerException $oauthError) {
     $oauthError->sendHttpResponse();
 }
 

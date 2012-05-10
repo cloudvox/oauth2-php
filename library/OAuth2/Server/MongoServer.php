@@ -17,9 +17,9 @@ class MongoServer extends Server
      * @var StorageMongo
      */
     protected $storage;
-    public function __construct(StorageMongo $db)
+    public function __construct(StorageMongo $db, $options = array())
     {
-        parent::__construct($db);
+        parent::__construct($db, $options);
     }
 
     /**
