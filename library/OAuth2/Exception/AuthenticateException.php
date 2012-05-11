@@ -37,11 +37,9 @@ class AuthenticateException extends ServerException {
      */
     public function __construct($httpCode, $tokenType, $realm, $error, $error_description = NULL, $scope = NULL) {
         parent::__construct($httpCode, $error, $error_description);
-
         if ($scope) {
-            $this->errorData['scope'] = $scope;
+            $this->errorData['scope'] = implode(' ',$scope) ;
         }
-
         // Build header
         $this->header = sprintf('WWW-Authenticate: %s realm="%s"', ucwords($tokenType), $realm);
         foreach ( $this->errorData as $key => $value ) {
