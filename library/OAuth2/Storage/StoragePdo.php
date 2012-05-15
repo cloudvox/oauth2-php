@@ -62,7 +62,7 @@ class StoragePdo implements GrantCodeInterface, RefreshTokensInterface {
      * Release DB connection during destruct.
      */
     function __destruct() {
-        $this->db = NULL; // Release db connection
+        $this->db = NULL; // Release _mongoDB connection
     }
 
     /**
