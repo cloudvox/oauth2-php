@@ -64,6 +64,8 @@ class ServerException extends Exception {
     public function sendHttpResponse() {
         $this->sendHeaders();
         header("HTTP/1.1 " . $this->getHttpCode());
+        // Allow all origins. This enables CORS requests to properly handle the response.
+        header('Access-Control-Allow-Origin: *');
         echo (string) $this;
         exit();
     }
