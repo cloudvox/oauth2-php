@@ -355,16 +355,33 @@ class Server {
      *
      * @param $config - An associative array as below of config options. See CONFIG_* constants.
      */
-    public function __construct(StorageInterface $storage, $config = array()) {
-        $this->storage = $storage;
-
+    public function __construct(StorageInterface $storage, $config = array())
+    {
+        $this->setStorage($storage);
         // Configuration options
         $this->setDefaultOptions();
         foreach ( $config as $name => $value ) {
             $this->setVariable($name, $value);
         }
     }
-
+    /**
+     *
+     * @param  \OAuth2\Storage\StorageInterface $storage
+     * @return  \OAuth2\Server\Server
+     */
+    public function setStorage($storage)
+    {
+        $this->storage = $storage;
+        $this;
+    }
+    /**
+     *
+     * @return \OAuth2\Storage\StorageInterface
+     */
+    public function getStorage()
+    {
+        return $this->storage;
+    }
     /**
      * Default configuration options are specified here.
      */
