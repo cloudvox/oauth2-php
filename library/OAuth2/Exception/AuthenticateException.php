@@ -36,6 +36,7 @@ class AuthenticateException extends ServerException {
      * of the access token for accessing the requested resource.
      */
     public function __construct($httpCode, $tokenType, $realm, $error, $error_description = NULL, $scope = NULL) {
+        $scope = (array) $scope;
         parent::__construct($httpCode, $error, $error_description);
         if ($scope) {
             $this->errorData['scope'] = implode(' ',$scope) ;

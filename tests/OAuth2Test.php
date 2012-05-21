@@ -100,6 +100,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase {
    * Tests \OAuth2\Server\Server->verifyAccessToken() with different scopes
    *
    * @dataProvider generateScopes
+   * @group scopes
    */
   public function testVerifyAccessTokenCheckScope($scopeRequired, $token, $expectedToPass) {
 

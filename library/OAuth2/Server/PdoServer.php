@@ -9,7 +9,7 @@ use OAuth2\Server\Server;
  * @category OAuth2
  * @package  OAuth2
  */
-class PDOServer extends Server
+class PdoServer extends Server
 {
 
 }

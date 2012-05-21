@@ -4,7 +4,7 @@ namespace OAuth2Tests;
 /**
  * \OAuth2\Server\Server test cases that invovle capturing output.
  */
-class OAuth2OutputTest extends \PHPUnit_Extensions_OutputTestCase {
+class OAuth2OutputTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @var \OAuth2\Server\Server
