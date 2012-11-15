@@ -596,7 +596,7 @@ class Server {
             }
 
             // IETF specifies content-type. NB: Not all webservers populate this _SERVER variable
-            if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] != 'application/x-www-form-urlencoded') {
+            if (isset($_SERVER['CONTENT_TYPE']) && !preg_match('/^application\/x\-www\-form\-urlencoded/',$_SERVER['CONTENT_TYPE'])) {
                 throw new AuthenticateException(
                     self::HTTP_BAD_REQUEST, $tokenType, $realm,
                     self::ERROR_INVALID_REQUEST, 'The content type for POST '.
