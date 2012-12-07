@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2\Exception;
+
 /**
  *
  *
@@ -6,8 +8,8 @@
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Exception;
 use OAuth2\Exception\Exception;
+
 /**
  * @category OAuth2
  * @package  OAuth2

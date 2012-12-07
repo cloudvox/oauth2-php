@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2\Storage;
+
 /**
  * @category OAuth2
  * @package  OAuth2
@@ -8,11 +10,10 @@
  * Simply pass in a configured PDO class, eg:
  * new OAuth2StoragePDO( new PDO('mysql:dbname=mydb;host=localhost', 'user', 'pass') );
  */
-namespace OAuth2\Storage;
-use OAuth2\Grant\GrantCodeInterface,
-    OAuth2\RefreshTokensInterface,
-    PDOException,
-    PDO;
+use OAuth2\Grant\GrantCodeInterface;
+use OAuth2\RefreshTokensInterface;
+use PDOException;
+use PDO;
 
 /**
  * PDO storage engine for the OAuth2 Library.

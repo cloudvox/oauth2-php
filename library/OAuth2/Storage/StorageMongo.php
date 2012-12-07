@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2\Storage;
+
 /**
  *
  *
@@ -6,11 +8,11 @@
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Storage;
-use OAuth2\Grant\GrantCodeInterface,
-    OAuth2\RefreshTokensInterface,
-    MongoException,
-    MongoDB;
+use OAuth2\Grant\GrantCodeInterface;
+use OAuth2\RefreshTokensInterface;
+use MongoException;
+use MongoDB;
+
 /**
  * @category OAuth2
  * @package  OAuth2

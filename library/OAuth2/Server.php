@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2;
+
 /**
  *
  *
@@ -6,19 +8,19 @@
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Server;
-use ReflectionClass,
-    Zend_Uri_Http,
-    OAuth2\Exception\ServerException,
-    OAuth2\Exception\AuthenticateException,
-    OAuth2\Exception\RedirectException,
-    OAuth2\Grant\GrantCodeInterface,
-    OAuth2\Grant\GrantUserInterface,
-    OAuth2\Grant\GrantClientInterface,
-    OAuth2\Grant\GrantImplicitInterface,
-    OAuth2\Grant\GrantExtensionInterface,
-    OAuth2\RefreshTokensInterface,
-    OAuth2\Storage\StorageInterface;
+use ReflectionClass;
+use Zend_Uri_Http;
+use OAuth2\Exception\ServerException;
+use OAuth2\Exception\AuthenticateException;
+use OAuth2\Exception\RedirectException;
+use OAuth2\Grant\GrantCodeInterface;
+use OAuth2\Grant\GrantUserInterface;
+use OAuth2\Grant\GrantClientInterface;
+use OAuth2\Grant\GrantImplicitInterface;
+use OAuth2\Grant\GrantExtensionInterface;
+use OAuth2\RefreshTokensInterface;
+use OAuth2\Storage\StorageInterface;
+
 /**
  * @category OAuth2
  * @package  OAuth2
@@ -367,7 +369,7 @@ class Server {
     /**
      *
      * @param  \OAuth2\Storage\StorageInterface $storage
-     * @return  \OAuth2\Server\Server
+     * @return  \OAuth2\Server
      */
     public function setStorage($storage)
     {
