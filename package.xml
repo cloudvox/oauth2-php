@@ -1,198 +1,214 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.9.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+<package packagerversion="1.9.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0"
+         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
     http://pear.php.net/dtd/tasks-1.0.xsd
     http://pear.php.net/dtd/package-2.0
     http://pear.php.net/dtd/package-2.0.xsd">
- <name>OAuth2</name>
- <channel>zircote.github.com/pear</channel>
- <summary>A PHP OAuth2 library rev.23</summary>
- <description>This is an beta release, see readme.txt for examples.</description>
- <lead>
-  <name>Robert Allen</name>
-  <user>zircote</user>
-  <email>zircote@gmail.com</email>
-  <active>yes</active>
- </lead>
- <date>2012-05-09</date>
- <time>11:16:23</time>
- <version>
-  <release>0.23.02</release>
-  <api>0.23.02</api>
- </version>
- <stability>
-  <release>beta</release>
-  <api>beta</api>
- </stability>
- <license uri="http://www.opensource.org/licenses/MIT">The MIT License</license>
- <notes>
-This is an beta release, see readme.txt for examples.
- </notes>
- <contents>
-  <dir baseinstalldir="/" name="/">
-   <dir name="examples">
-    <dir name="mongo">
-     <file baseinstalldir="/" name="addclient.php" role="doc" />
-     <file baseinstalldir="/" name="authorize.php" role="doc" />
-     <file baseinstalldir="/" name="protected_resource.php" role="doc" />
-     <file baseinstalldir="/" name="token.php" role="doc" />
-    </dir> <!-- /examples/mongo -->
-    <dir name="pdo">
-     <file baseinstalldir="/" name="addclient.php" role="doc" />
-     <file baseinstalldir="/" name="authorize.php" role="doc" />
-     <file baseinstalldir="/" name="mysql_create_tables.sql" role="doc" />
-     <file baseinstalldir="/" name="protected_resource.php" role="doc" />
-     <file baseinstalldir="/" name="token.php" role="doc" />
-    </dir> <!-- /examples/pdo -->
-   </dir> <!-- /examples -->
-   <dir name="library">
-    <dir name="OAuth2">
-     <dir name="Exception">
-      <file baseinstalldir="/" name="AuthenticateException.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="Exception.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="RedirectException.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="ServerException.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-     </dir> <!-- /library/OAuth2/Exception -->
-     <dir name="Grant">
-      <file baseinstalldir="/" name="GrantClientInterface.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="GrantCodeInterface.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="GrantExtensionInterface.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="GrantImplicitInterface.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="GrantUserInterface.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-     </dir> <!-- /library/OAuth2/Grant -->
-     <dir name="Server">
-      <file baseinstalldir="/" name="MongoServer.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="PDOServer.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="Server.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-     </dir> <!-- /library/OAuth2/Server -->
-     <dir name="Storage">
-      <file baseinstalldir="/" name="StorageInterface.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="StorageMongo.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-      <file baseinstalldir="/" name="StoragePdo.php" role="php">
-       <tasks:replace from="@name@" to="name" type="package-info" />
-       <tasks:replace from="@package_version@" to="version" type="package-info" />
-      </file>
-     </dir> <!-- /library/OAuth2/Storage -->
-     <file baseinstalldir="/" name="Client.php" role="php">
-      <tasks:replace from="@name@" to="name" type="package-info" />
-      <tasks:replace from="@package_version@" to="version" type="package-info" />
-     </file>
-     <file baseinstalldir="/" name="RefreshTokensInterface.php" role="php">
-      <tasks:replace from="@name@" to="name" type="package-info" />
-      <tasks:replace from="@package_version@" to="version" type="package-info" />
-     </file>
-    </dir> <!-- /library/OAuth2 -->
-   </dir> <!-- /library -->
-   <dir name="tests">
-    <file baseinstalldir="/" name="bootstrap.php" role="test">
-     <tasks:replace from="@name@" to="name" type="package-info" />
-     <tasks:replace from="@package_version@" to="version" type="package-info" />
-    </file>
-    <file baseinstalldir="/" name="OAuth2OutputTest.php" role="test">
-     <tasks:replace from="@name@" to="name" type="package-info" />
-     <tasks:replace from="@package_version@" to="version" type="package-info" />
-    </file>
-    <file baseinstalldir="/" name="OAuth2Test.php" role="test">
-     <tasks:replace from="@name@" to="name" type="package-info" />
-     <tasks:replace from="@package_version@" to="version" type="package-info" />
-    </file>
-   </dir> <!-- /tests -->
-   <file baseinstalldir="/" name="composer.json" role="data" />
-   <file baseinstalldir="/" name="composer.lock" role="data" />
-   <file baseinstalldir="/" name="LICENSE.txt" role="doc" />
-   <file baseinstalldir="/" name="packages.json" role="data" />
-   <file baseinstalldir="/" name="README.txt" role="data" />
-   <file baseinstalldir="/" name="VERSION" role="doc" />
-  </dir> <!-- / -->
- </contents>
- <dependencies>
-  <required>
-   <php>
-    <min>5.3.3</min>
-   </php>
-   <pearinstaller>
-    <min>1.7.0</min>
-   </pearinstaller>
-  </required>
- </dependencies>
- <phprelease>
-  <filelist>
-   <install as="OAuth2/Client.php" name="library/OAuth2/Client.php" />
-   <install as="OAuth2/Exception/AuthenticateException.php" name="library/OAuth2/Exception/AuthenticateException.php" />
-   <install as="OAuth2/Exception/Exception.php" name="library/OAuth2/Exception/Exception.php" />
-   <install as="OAuth2/Exception/RedirectException.php" name="library/OAuth2/Exception/RedirectException.php" />
-   <install as="OAuth2/Exception/ServerException.php" name="library/OAuth2/Exception/ServerException.php" />
-   <install as="OAuth2/Grant/GrantClientInterface.php" name="library/OAuth2/Grant/GrantClientInterface.php" />
-   <install as="OAuth2/Grant/GrantCodeInterface.php" name="library/OAuth2/Grant/GrantCodeInterface.php" />
-   <install as="OAuth2/Grant/GrantExtensionInterface.php" name="library/OAuth2/Grant/GrantExtensionInterface.php" />
-   <install as="OAuth2/Grant/GrantImplicitInterface.php" name="library/OAuth2/Grant/GrantImplicitInterface.php" />
-   <install as="OAuth2/Grant/GrantUserInterface.php" name="library/OAuth2/Grant/GrantUserInterface.php" />
-   <install as="OAuth2/RefreshTokensInterface.php" name="library/OAuth2/RefreshTokensInterface.php" />
-   <install as="OAuth2/Server/MongoServer.php" name="library/OAuth2/Server/MongoServer.php" />
-   <install as="OAuth2/Server/PDOServer.php" name="library/OAuth2/Server/PDOServer.php" />
-   <install as="OAuth2/Server/Server.php" name="library/OAuth2/Server/Server.php" />
-   <install as="OAuth2/Storage/StorageInterface.php" name="library/OAuth2/Storage/StorageInterface.php" />
-   <install as="OAuth2/Storage/StorageMongo.php" name="library/OAuth2/Storage/StorageMongo.php" />
-   <install as="OAuth2/Storage/StoragePdo.php" name="library/OAuth2/Storage/StoragePdo.php" />
-  </filelist>
- </phprelease>
- <phprelease />
- <changelog>
-  <release>
-   <version>
-    <release>0.23.02</release>
-    <api>0.23.02</api>
-   </version>
-   <stability>
-    <release>beta</release>
-    <api>beta</api>
-   </stability>
-   <date>2012-05-09</date>
-   <license uri="http://www.opensource.org/licenses/MIT">The MIT License</license>
-   <notes>
-This is an beta release, see readme.txt for examples.
-   </notes>
-  </release>
- </changelog>
+    <name>OAuth2</name>
+    <channel>zircote.github.com/pear</channel>
+    <summary>A PHP OAuth2 library rev.23</summary>
+    <description>This is an beta release, see readme.txt for examples.</description>
+    <lead>
+        <name>Robert Allen</name>
+        <user>zircote</user>
+        <email>zircote@gmail.com</email>
+        <active>yes</active>
+    </lead>
+    <date>2012-05-09</date>
+    <time>11:16:23</time>
+    <version>
+        <release>0.23.02</release>
+        <api>0.23.02</api>
+    </version>
+    <stability>
+        <release>beta</release>
+        <api>beta</api>
+    </stability>
+    <license uri="http://www.opensource.org/licenses/MIT">The MIT License</license>
+    <notes>
+        This is an beta release, see readme.txt for examples.
+    </notes>
+    <contents>
+        <dir baseinstalldir="/" name="/">
+            <dir name="examples">
+                <dir name="mongo">
+                    <file baseinstalldir="/" name="addclient.php" role="doc"/>
+                    <file baseinstalldir="/" name="authorize.php" role="doc"/>
+                    <file baseinstalldir="/" name="protected_resource.php" role="doc"/>
+                    <file baseinstalldir="/" name="token.php" role="doc"/>
+                </dir>
+                <!-- /examples/mongo -->
+                <dir name="pdo">
+                    <file baseinstalldir="/" name="addclient.php" role="doc"/>
+                    <file baseinstalldir="/" name="authorize.php" role="doc"/>
+                    <file baseinstalldir="/" name="mysql_create_tables.sql" role="doc"/>
+                    <file baseinstalldir="/" name="protected_resource.php" role="doc"/>
+                    <file baseinstalldir="/" name="token.php" role="doc"/>
+                </dir>
+                <!-- /examples/pdo -->
+            </dir>
+            <!-- /examples -->
+            <dir name="library">
+                <dir name="OAuth2">
+                    <dir name="Exception">
+                        <file baseinstalldir="/" name="AuthenticateException.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="Exception.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="RedirectException.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="ServerException.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                    </dir>
+                    <!-- /library/OAuth2/Exception -->
+                    <dir name="Grant">
+                        <file baseinstalldir="/" name="GrantClientInterface.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="GrantCodeInterface.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="GrantExtensionInterface.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="GrantImplicitInterface.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="GrantUserInterface.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                    </dir>
+                    <!-- /library/OAuth2/Grant -->
+                    <dir name="Server">
+                        <file baseinstalldir="/" name="MongoServer.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="PDOServer.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="Server.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                    </dir>
+                    <!-- /library/OAuth2/Server -->
+                    <dir name="Storage">
+                        <file baseinstalldir="/" name="StorageInterface.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="StorageMongo.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                        <file baseinstalldir="/" name="StoragePdo.php" role="php">
+                            <tasks:replace from="@name@" to="name" type="package-info"/>
+                            <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                        </file>
+                    </dir>
+                    <!-- /library/OAuth2/Storage -->
+                    <file baseinstalldir="/" name="Client.php" role="php">
+                        <tasks:replace from="@name@" to="name" type="package-info"/>
+                        <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                    </file>
+                    <file baseinstalldir="/" name="RefreshTokensInterface.php" role="php">
+                        <tasks:replace from="@name@" to="name" type="package-info"/>
+                        <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                    </file>
+                </dir>
+                <!-- /library/OAuth2 -->
+            </dir>
+            <!-- /library -->
+            <dir name="tests">
+                <file baseinstalldir="/" name="bootstrap.php" role="test">
+                    <tasks:replace from="@name@" to="name" type="package-info"/>
+                    <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                </file>
+                <file baseinstalldir="/" name="OAuth2OutputTest.php" role="test">
+                    <tasks:replace from="@name@" to="name" type="package-info"/>
+                    <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                </file>
+                <file baseinstalldir="/" name="OAuth2Test.php" role="test">
+                    <tasks:replace from="@name@" to="name" type="package-info"/>
+                    <tasks:replace from="@package_version@" to="version" type="package-info"/>
+                </file>
+            </dir>
+            <!-- /tests -->
+            <file baseinstalldir="/" name="composer.json" role="data"/>
+            <file baseinstalldir="/" name="composer.lock" role="data"/>
+            <file baseinstalldir="/" name="LICENSE.txt" role="doc"/>
+            <file baseinstalldir="/" name="packages.json" role="data"/>
+            <file baseinstalldir="/" name="README.txt" role="data"/>
+            <file baseinstalldir="/" name="VERSION" role="doc"/>
+        </dir>
+        <!-- / -->
+    </contents>
+    <dependencies>
+        <required>
+            <php>
+                <min>5.3.3</min>
+            </php>
+            <pearinstaller>
+                <min>1.7.0</min>
+            </pearinstaller>
+        </required>
+    </dependencies>
+    <phprelease>
+        <filelist>
+            <install as="OAuth2/Client.php" name="library/OAuth2/Client.php"/>
+            <install as="OAuth2/Exception/AuthenticateException.php"
+                     name="library/OAuth2/Exception/AuthenticateException.php"/>
+            <install as="OAuth2/Exception/Exception.php" name="library/OAuth2/Exception/Exception.php"/>
+            <install as="OAuth2/Exception/RedirectException.php" name="library/OAuth2/Exception/RedirectException.php"/>
+            <install as="OAuth2/Exception/ServerException.php" name="library/OAuth2/Exception/ServerException.php"/>
+            <install as="OAuth2/Grant/GrantClientInterface.php" name="library/OAuth2/Grant/GrantClientInterface.php"/>
+            <install as="OAuth2/Grant/GrantCodeInterface.php" name="library/OAuth2/Grant/GrantCodeInterface.php"/>
+            <install as="OAuth2/Grant/GrantExtensionInterface.php"
+                     name="library/OAuth2/Grant/GrantExtensionInterface.php"/>
+            <install as="OAuth2/Grant/GrantImplicitInterface.php"
+                     name="library/OAuth2/Grant/GrantImplicitInterface.php"/>
+            <install as="OAuth2/Grant/GrantUserInterface.php" name="library/OAuth2/Grant/GrantUserInterface.php"/>
+            <install as="OAuth2/RefreshTokensInterface.php" name="library/OAuth2/RefreshTokensInterface.php"/>
+            <install as="OAuth2/Server/MongoServer.php" name="library/OAuth2/Server/MongoServer.php"/>
+            <install as="OAuth2/Server/PDOServer.php" name="library/OAuth2/Server/PDOServer.php"/>
+            <install as="OAuth2/Server/Server.php" name="library/OAuth2/Server/Server.php"/>
+            <install as="OAuth2/Storage/StorageInterface.php" name="library/OAuth2/Storage/StorageInterface.php"/>
+            <install as="OAuth2/Storage/StorageMongo.php" name="library/OAuth2/Storage/StorageMongo.php"/>
+            <install as="OAuth2/Storage/StoragePdo.php" name="library/OAuth2/Storage/StoragePdo.php"/>
+        </filelist>
+    </phprelease>
+    <phprelease/>
+    <changelog>
+        <release>
+            <version>
+                <release>0.23.02</release>
+                <api>0.23.02</api>
+            </version>
+            <stability>
+                <release>beta</release>
+                <api>beta</api>
+            </stability>
+            <date>2012-05-09</date>
+            <license uri="http://www.opensource.org/licenses/MIT">The MIT License</license>
+            <notes>
+                This is an beta release, see readme.txt for examples.
+            </notes>
+        </release>
+    </changelog>
 </package>

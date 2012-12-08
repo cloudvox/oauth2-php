@@ -37,7 +37,7 @@ class AuthenticateException extends ServerException {
      * A space-delimited list of scope values indicating the required scope
      * of the access token for accessing the requested resource.
      */
-    public function __construct($httpCode, $tokenType, $realm, $error, $error_description = NULL, $scope = NULL) {
+    public function __construct($httpCode, $tokenType, $realm, $error, $error_description = null, $scope = null) {
         $scope = (array) $scope;
         parent::__construct($httpCode, $error, $error_description);
         if ($scope) {

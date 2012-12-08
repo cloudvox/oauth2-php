@@ -42,7 +42,7 @@ class RedirectException extends ServerException {
      *
      * @ingroup oauth2_error
      */
-    public function __construct($redirect_uri, $error, $error_description = NULL, $state = NULL) {
+    public function __construct($redirect_uri, $error, $error_description = null, $state = null) {
         parent::__construct(Server::HTTP_FOUND, $error, $error_description);
 
         $this->redirectUri = $redirect_uri;

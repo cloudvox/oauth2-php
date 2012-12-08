@@ -32,7 +32,7 @@ class ServerException extends Exception {
      * used to assist in the understanding and resolution of the error
      * occurred.
      */
-    public function __construct($http_status_code, $error, $error_description = NULL) {
+    public function __construct($http_status_code, $error, $error_description = null) {
         parent::__construct($error);
         $this->httpCode = $http_status_code;
         $this->errorData['error'] = $error;

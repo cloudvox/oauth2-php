@@ -1,0 +1,48 @@
+<?php
+namespace OAuth2\Storage;
+
+/**
+ * @category OAuth2
+ * @package  OAuth2
+ */
+use OAuth2\Storage\StorageInterface;
+
+/**
+ * @category OAuth2
+ * @package  OAuth2
+ * Storage engines that support the "Resource Owner Password Credentials" grant type should implement this interface
+ *
+ *
+ * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.3
+ */
+interface GrantUserInterface extends StorageInterface {
+
+    /**
+     * Grant access tokens for basic user credentials.
+     *
+     * Check the supplied username and password for validity.
+     *
+     * You can also use the $client_id param to do any checks required based on a client, if you need that.
+     *
+     * Required for OAuth2::GRANT_TYPE_USER_CREDENTIALS.
+     *
+     * @param mixed $client_id Client identifier to be check with.
+     * @param string $username Username to be check with.
+     * @param string $password Password to be check with.
+     *
+     * @return bool true if the username and password are valid, and false if it isn't. Moreover, if the username and
+     * password are valid, and you want to verify the scope of a user's access, return an associative array with the
+     * scope values as below. We'll check the scope you provide against the requested scope before providing an access
+     * token:
+     * <code>
+     * return array(
+     * 'scope' => <stored scope values (space-separated string)>,
+     * );
+     * </code>
+     *
+     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.3
+     *
+     * @ingroup oauth2_section_4
+     */
+    public function checkUserCredentials($client_id, $username, $password);
+}

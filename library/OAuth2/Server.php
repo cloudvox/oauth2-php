@@ -13,18 +13,18 @@ use Zend_Uri_Http;
 use OAuth2\Exception\ServerException;
 use OAuth2\Exception\AuthenticateException;
 use OAuth2\Exception\RedirectException;
-use OAuth2\Grant\GrantCodeInterface;
-use OAuth2\Grant\GrantUserInterface;
-use OAuth2\Grant\GrantClientInterface;
-use OAuth2\Grant\GrantImplicitInterface;
-use OAuth2\Grant\GrantExtensionInterface;
-use OAuth2\RefreshTokensInterface;
+use OAuth2\Storage\GrantCodeInterface;
+use OAuth2\Storage\GrantUserInterface;
+use OAuth2\Storage\GrantClientInterface;
+use OAuth2\Storage\GrantImplicitInterface;
+use OAuth2\Storage\GrantExtensionInterface;
+use OAuth2\Storage\RefreshTokensInterface;
 use OAuth2\Storage\StorageInterface;
 
 /**
  * @category OAuth2
  * @package  OAuth2
- * @mainpage
+ *
  * OAuth 2.0 server in PHP, originally written for
  * <a href="http://www.opendining.net/"> Open Dining</a>. Supports
  * <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-20">IETF draft v20</a>.
@@ -42,11 +42,6 @@ use OAuth2\Storage\StorageInterface;
  * now, your best bet is to view the oauth.php source - it has lots of
  * comments.
  *
- * @author Tim Ridgely <tim.ridgely@gmail.com>
- * @author Aaron Parecki <aaron@parecki.com>
- * @author Edison Wong <hswong3i@pantarei-design.com>
- * @author David Rochwerger <catch.dave@gmail.com>
- *
  * @see http://code.google.com/p/oauth2-php/
  * @see https://github.com/quizlet/oauth2-php
  */
@@ -56,12 +51,9 @@ use OAuth2\Storage\StorageInterface;
  *
  * @todo Add support for Message Authentication Code (MAC) token type.
  *
- * @author Originally written by Tim Ridgely <tim.ridgely@gmail.com>.
- * @author Updated to draft v10 by Aaron Parecki <aaron@parecki.com>.
- * @author Debug, coding style clean up and documented by Edison Wong <hswong3i@pantarei-design.com>.
- * @author Refactored (including separating from raw POST/GET) and updated to draft v20 by David Rochwerger <catch.dave@gmail.com>.
  */
-class Server {
+class Server
+{
 
     /**
      * Array of persistent variables stored.
@@ -71,13 +63,12 @@ class Server {
     /**
      * Storage engine for authentication server
      *
-     * @var StorageInterface
+     * @var GrantClientInterface|GrantCodeInterface|GrantExtensionInterface|GrantImplicitInterface|GrantUserInterface|RefreshTokensInterface|StorageInterface
      */
     protected $storage;
 
     /**
-     * Keep track of the old refresh token. So we can unset
-     * the old refresh tokens when a new one is issued.
+     * Keep track of the old refresh token. So we can unset the old refresh tokens when a new one is issued.
      *
      * @var string
      */
@@ -85,9 +76,9 @@ class Server {
 
     /**
      * Default values for configuration options.
+     * @see Server::setDefaultOptions()
      *
      * @var int
-     * @see Server::setDefaultOptions()
      */
     const DEFAULT_ACCESS_TOKEN_LIFETIME = 3600;
     const DEFAULT_REFRESH_TOKEN_LIFETIME = 1209600;
@@ -95,18 +86,35 @@ class Server {
     const DEFAULT_WWW_REALM = 'Service';
 
     /**
-     * Configurable options.
-     *
-     * @var string
+     * The lifetime of access token in seconds.
      */
-    const CONFIG_ACCESS_LIFETIME = 'access_token_lifetime'; // The lifetime of access token in seconds.
-    const CONFIG_REFRESH_LIFETIME = 'refresh_token_lifetime'; // The lifetime of refresh token in seconds.
-    const CONFIG_AUTH_LIFETIME = 'auth_code_lifetime'; // The lifetime of auth code in seconds.
-    const CONFIG_SUPPORTED_SCOPES = 'supported_scopes'; // Array of scopes you want to support
-    const CONFIG_TOKEN_TYPE = 'token_type'; // Token type to respond with. Currently only "Bearer" supported.
+    const CONFIG_ACCESS_LIFETIME = 'access_token_lifetime';
+    /**
+     * The lifetime of refresh token in seconds.
+     */
+    const CONFIG_REFRESH_LIFETIME = 'refresh_token_lifetime';
+    /**
+     * The lifetime of auth code in seconds.
+     */
+    const CONFIG_AUTH_LIFETIME = 'auth_code_lifetime';
+    /**
+     * Array of scopes you want to support
+     */
+    const CONFIG_SUPPORTED_SCOPES = 'supported_scopes';
+    /**
+     * Token type to respond with. Currently only "Bearer" supported.
+     */
+    const CONFIG_TOKEN_TYPE = 'token_type';
     const CONFIG_WWW_REALM = 'realm';
-    const CONFIG_ENFORCE_INPUT_REDIRECT = 'enforce_redirect'; // Set to true to enforce redirect_uri on input for both authorize and token steps.
-    const CONFIG_ENFORCE_STATE = 'enforce_state'; // Set to true to enforce state to be passed in authorization (see http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-10.12)
+    /**
+     * Set to true to enforce redirect_uri on input for both authorize and token steps.
+     */
+    const CONFIG_ENFORCE_INPUT_REDIRECT = 'enforce_redirect';
+    /**
+     * Set to true to enforce state to be passed in authorization
+     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-10.12
+     */
+    const CONFIG_ENFORCE_STATE = 'enforce_state';
 
 
     /**
@@ -121,8 +129,6 @@ class Server {
     const CLIENT_ID_REGEXP = '/^[a-z0-9-_]{3,32}$/i';
 
     /**
-     * @defgroup oauth2_section_5 Accessing a Protected Resource
-     * @{
      *
      * Clients access protected resources by presenting an access token to
      * the resource server. Access tokens act as bearer tokens, where the
@@ -155,12 +161,6 @@ class Server {
     const TOKEN_BEARER_HEADER_NAME = 'Bearer';
 
     /**
-     * @}
-     */
-
-    /**
-     * @defgroup oauth2_section_4 Obtaining Authorization
-     * @{
      *
      * When the client interacts with an end-user, the end-user MUST first
      * grant the client authorization to access its protected resources.
@@ -183,10 +183,6 @@ class Server {
      */
     const RESPONSE_TYPE_AUTH_CODE = 'code';
     const RESPONSE_TYPE_ACCESS_TOKEN = 'token';
-
-    /**
-     * @}
-     */
 
     /**
      * @defgroup oauth2_section_5 Obtaining an Access Token
@@ -218,24 +214,15 @@ class Server {
     const GRANT_TYPE_REGEXP = '#^(authorization_code|token|password|client_credentials|refresh_token|http://.*)$#';
 
     /**
-     * @}
-     */
-
-    /**
      * Possible token types as defined by draft 20.
-     *
-     * TODO: Add support for mac (and maybe other types?)
      *
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-7.1
      */
     const TOKEN_TYPE_BEARER = 'bearer';
-    const TOKEN_TYPE_MAC = 'mac'; // Currently unsupported
-
-
     /**
-     * @defgroup self::HTTP_status HTTP status code
-     * @{
+     * Currently unsupported
      */
+    const TOKEN_TYPE_MAC = 'mac';
 
     /**
      * HTTP status codes for successful and error states as specified by draft 20.
@@ -250,12 +237,6 @@ class Server {
     const HTTP_UNAVAILABLE = '503 Service Unavailable';
 
     /**
-     * @}
-     */
-
-    /**
-     * @defgroup oauth2_error Error handling
-     * @{
      *
      * @todo Extend for i18n.
      * @todo Consider moving all error related functionality into a separate class.
@@ -349,23 +330,20 @@ class Server {
     const ERROR_INSUFFICIENT_SCOPE = 'invalid_scope';
 
     /**
-     * @}
-     */
-
-    /**
      * Creates an Server.0 server-side instance.
      *
-     * @param $config - An associative array as below of config options. See CONFIG_* constants.
+     * @param Storage\StorageInterface $storage
+     * @param array $config
      */
     public function __construct(StorageInterface $storage, $config = array())
     {
         $this->setStorage($storage);
-        // Configuration options
         $this->setDefaultOptions();
-        foreach ( $config as $name => $value ) {
+        foreach ($config as $name => $value) {
             $this->setVariable($name, $value);
         }
     }
+
     /**
      *
      * @param  \OAuth2\Storage\StorageInterface $storage
@@ -374,8 +352,9 @@ class Server {
     public function setStorage($storage)
     {
         $this->storage = $storage;
-        $this;
+        return $this;
     }
+
     /**
      *
      * @return \OAuth2\Storage\StorageInterface
@@ -384,34 +363,33 @@ class Server {
     {
         return $this->storage;
     }
+
     /**
      * Default configuration options are specified here.
      */
-    protected function setDefaultOptions() {
+    protected function setDefaultOptions()
+    {
         $this->conf = array(
-            self::CONFIG_ACCESS_LIFETIME        => self::DEFAULT_ACCESS_TOKEN_LIFETIME,
-            self::CONFIG_REFRESH_LIFETIME       => self::DEFAULT_REFRESH_TOKEN_LIFETIME,
-            self::CONFIG_AUTH_LIFETIME          => self::DEFAULT_AUTH_CODE_LIFETIME,
-            self::CONFIG_WWW_REALM              => self::DEFAULT_WWW_REALM,
-            self::CONFIG_TOKEN_TYPE             => self::TOKEN_TYPE_BEARER,
+            self::CONFIG_ACCESS_LIFETIME => self::DEFAULT_ACCESS_TOKEN_LIFETIME,
+            self::CONFIG_REFRESH_LIFETIME => self::DEFAULT_REFRESH_TOKEN_LIFETIME,
+            self::CONFIG_AUTH_LIFETIME => self::DEFAULT_AUTH_CODE_LIFETIME,
+            self::CONFIG_WWW_REALM => self::DEFAULT_WWW_REALM,
+            self::CONFIG_TOKEN_TYPE => self::TOKEN_TYPE_BEARER,
             self::CONFIG_ENFORCE_INPUT_REDIRECT => false,
-            self::CONFIG_ENFORCE_STATE          => false,
-            self::CONFIG_SUPPORTED_SCOPES       => array() // This is expected to be passed in on construction. Scopes can be an aribitrary string.
+            self::CONFIG_ENFORCE_STATE => false,
+            self::CONFIG_SUPPORTED_SCOPES => array()
         );
     }
 
     /**
      * Returns a persistent variable.
      *
-     * @param $name
-     * The name of the variable to return.
-     * @param $default
-     * The default value to use if this variable has never been set.
-     *
-     * @return
-     * The value of the variable.
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
      */
-    public function getVariable($name, $default = null) {
+    public function getVariable($name, $default = null)
+    {
         $name = strtolower($name);
 
         return isset($this->conf[$name]) ? $this->conf[$name] : $default;
@@ -420,20 +398,17 @@ class Server {
     /**
      * Sets a persistent variable.
      *
-     * @param $name
-     * The name of the variable to set.
-     * @param $value
-     * The value to set.
+     * @param string $name
+     * @param mixed $value
+     * @return Server
      */
-    public function setVariable($name, $value) {
+    public function setVariable($name, $value)
+    {
         $name = strtolower($name);
 
         $this->conf[$name] = $value;
         return $this;
     }
-
-    // Resource protecting (Section 5).
-
 
     /**
      * Check that a valid access token has been provided.
@@ -452,24 +427,26 @@ class Server {
      * the exception thrown and behave differently if you like (log errors, allow
      * public access for missing tokens, etc)
      *
-     * @param $scope
-     * A space-separated string of required scope(s), if you want to check
-     * for scope.
-     * @return array
-     * Token
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-7
      *
-     * @ingroup oauth2_section_7
+     *
+     * @param string $token_param
+     * @param string $scope A space-separated string of required scope(s), if you want to check for scope.
+     * @return mixed
+     *
+     * @throws AuthenticateException
+     *
      */
-    public function verifyAccessToken($token_param, $scope = null) {
+    public function verifyAccessToken($token_param, $scope = null)
+    {
         $tokenType = $this->getVariable(self::CONFIG_TOKEN_TYPE);
         $realm = $this->getVariable(self::CONFIG_WWW_REALM);
         if (!$token_param) { // Access token was not provided
             throw new AuthenticateException(
                 self::HTTP_BAD_REQUEST, $tokenType, $realm,
-                self::ERROR_INVALID_REQUEST, 'The request is missing a required'.
-                ' parameter, includes an unsupported parameter or parameter value'.
-                ', repeats the same parameter, uses more than one method for '.
+                self::ERROR_INVALID_REQUEST, 'The request is missing a required' .
+                ' parameter, includes an unsupported parameter or parameter value' .
+                ', repeats the same parameter, uses more than one method for ' .
                 'including an access token, or is otherwise malformed.', $scope
             );
         }
@@ -503,7 +480,7 @@ class Server {
         if ($scope && (!isset($token["scope"]) || !$token["scope"] || !$this->checkScope($scope, $token["scope"]))) {
             throw new AuthenticateException(
                 self::HTTP_FORBIDDEN, $tokenType, $realm,
-                self::ERROR_INSUFFICIENT_SCOPE, 'The request requires higher '.
+                self::ERROR_INSUFFICIENT_SCOPE, 'The request requires higher ' .
                 'privileges than provided by the access token.', $scope
             );
         }
@@ -520,7 +497,7 @@ class Server {
      * POST and GET.
      *
      * NB: Resource servers MUST accept tokens via the Authorization scheme
-     * (http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08#section-2).
+     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08#section-2
      *
      * @todo Should we enforce TLS/SSL in this function?
      *
@@ -532,9 +509,11 @@ class Server {
      * @see http://code.google.com/p/android/issues/detail?id=6684
      *
      * We don't want to test this functionality as it relies on superglobals and headers:
-     * @codeCoverageIgnoreStart
+     *
+     * @return string
      */
-    public function getBearerToken() {
+    public function getBearerToken()
+    {
         if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
             $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
         } elseif (function_exists('apache_request_headers')) {
@@ -546,7 +525,10 @@ class Server {
                     500, 'Header Acquistition is unsupported on this server'
                 );
             }
-            // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
+            /*
+             * Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about
+             * capitalization for Authorization)
+             */
             $requestHeaders = array_combine(
                 array_map('ucwords', array_keys($requestHeaders)),
                 array_values($requestHeaders)
@@ -565,7 +547,7 @@ class Server {
         if ($methodsUsed > 1) {
             throw new AuthenticateException(
                 self::HTTP_BAD_REQUEST, $tokenType, $realm,
-                self::ERROR_INVALID_REQUEST, 'Only one method may be used to '.
+                self::ERROR_INVALID_REQUEST, 'Only one method may be used to ' .
                 'authenticate at a time (Auth header, GET or POST).'
             );
         } elseif ($methodsUsed == 0) {
@@ -592,16 +574,20 @@ class Server {
             if ($_SERVER['REQUEST_METHOD'] != 'POST') {
                 throw new AuthenticateException(
                     self::HTTP_BAD_REQUEST, $tokenType, $realm,
-                    self::ERROR_INVALID_REQUEST, 'When putting the token in '.
+                    self::ERROR_INVALID_REQUEST, 'When putting the token in ' .
                     'the body, the method must be POST.'
                 );
             }
 
             // IETF specifies content-type. NB: Not all webservers populate this _SERVER variable
-            if (isset($_SERVER['CONTENT_TYPE']) && !preg_match('/^application\/x\-www\-form\-urlencoded/',$_SERVER['CONTENT_TYPE'])) {
+            if (isset($_SERVER['CONTENT_TYPE'])
+                && !preg_match(
+                    '/^application\/x\-www\-form\-urlencoded/', $_SERVER['CONTENT_TYPE']
+                )
+            ) {
                 throw new AuthenticateException(
                     self::HTTP_BAD_REQUEST, $tokenType, $realm,
-                    self::ERROR_INVALID_REQUEST, 'The content type for POST '.
+                    self::ERROR_INVALID_REQUEST, 'The content type for POST ' .
                     'requests must be "application/x-www-form-urlencoded"'
                 );
             }
@@ -613,23 +599,20 @@ class Server {
         return $_GET[self::TOKEN_PARAM_NAME];
     }
 
-    /** @codeCoverageIgnoreEnd */
-
     /**
+     *
      * Check if everything in required scope is contained in available scope.
-     *
-     * @param $required_scope
-     * Required scope to be check with.
-     *
-     * @return
-     * true if everything in required scope is contained in available scope,
-     * and False if it isn't.
+     * returns true if everything in required scope is contained in available
+     * scope, and False if it isn't.
      *
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-7
      *
-     * @ingroup oauth2_section_7
+     * @param string $required_scope
+     * @param array $available_scope
+     * @return bool
      */
-    private function checkScope($required_scope, $available_scope) {
+    private function checkScope($required_scope, $available_scope)
+    {
         // The required scope should match or be a subset of the available scope
         if (!is_array($required_scope)) {
             $required_scope = explode(' ', trim($required_scope));
@@ -642,29 +625,25 @@ class Server {
         return (count(array_diff($required_scope, $available_scope)) == 0);
     }
 
-    // Access token granting (Section 4).
-
-
     /**
      * Grant or deny a requested access token.
      * This would be called from the "/token" endpoint as defined in the spec.
      * Obviously, you can call your endpoint whatever you want.
      *
-     * @param $inputData - The draft specifies that the parameters should be
-     * retrieved from POST, but you can override to whatever method you like.
-     * @throws ServerException
-     *
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-10.6
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.1.3
      *
-     * @ingroup oauth2_section_4
+     * @param array $inputData
+     * @param array $authHeaders
+     * @throws Exception\ServerException
      */
-    public function grantAccessToken(array $inputData = null, array $authHeaders = null) {
+    public function grantAccessToken(array $inputData = null, array $authHeaders = null)
+    {
         $filters = array(
             "grant_type" => array("filter" => FILTER_VALIDATE_REGEXP,
-                "options" => array("regexp" => self::GRANT_TYPE_REGEXP),
-                "flags" => FILTER_REQUIRE_SCALAR),
+                                  "options" => array("regexp" => self::GRANT_TYPE_REGEXP),
+                                  "flags" => FILTER_REQUIRE_SCALAR),
             "scope" => array("flags" => FILTER_REQUIRE_SCALAR),
             "code" => array("flags" => FILTER_REQUIRE_SCALAR),
             "redirect_uri" => array("filter" => FILTER_SANITIZE_URL),
@@ -688,7 +667,8 @@ class Server {
         // Grant Type must be specified.
         if (!$input["grant_type"]) {
             throw new ServerException(
-                self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_INVALID_REQUEST,
                 'Invalid grant_type parameter or parameter missing'
             );
         }
@@ -698,14 +678,16 @@ class Server {
 
         if ($this->storage->checkClientCredentials($client[0], $client[1]) === false) {
             throw new ServerException(
-                self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT,
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_INVALID_CLIENT,
                 'The client credentials are invalid'
             );
         }
 
         if (!$this->storage->checkRestrictedGrantType($client[0], $input["grant_type"])) {
             throw new ServerException(
-                self::HTTP_BAD_REQUEST, self::ERROR_UNAUTHORIZED_CLIENT,
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_UNAUTHORIZED_CLIENT,
                 'The grant type is unauthorized for this client_id'
             );
         }
@@ -715,22 +697,27 @@ class Server {
             case self::GRANT_TYPE_AUTH_CODE:
                 if (!($this->storage instanceof GrantCodeInterface)) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_UNSUPPORTED_GRANT_TYPE
                     );
                 }
 
                 if (!$input["code"]) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_REQUEST,
                         'Missing parameter. "code" is required'
                     );
                 }
 
                 if ($this->getVariable(
-                    self::CONFIG_ENFORCE_INPUT_REDIRECT) && !$input["redirect_uri"]
+                    self::CONFIG_ENFORCE_INPUT_REDIRECT
+                )
+                    && !$input["redirect_uri"]
                 ) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_REQUEST,
                         "The redirect URI parameter is required."
                     );
                 }
@@ -740,25 +727,30 @@ class Server {
                 // Check the code exists
                 if ($stored === null || $client[0] != $stored["client_id"]) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_GRANT,
                         'Refresh token doesn\'t exist or is invalid for the client'
                     );
                 }
 
                 // Validate the redirect URI. If a redirect URI has been provided on input, it must be validated
-                if ($input["redirect_uri"] &&
-                !$this->validateRedirectUri(
-                    $input["redirect_uri"], $stored["redirect_uri"]
-                )) {
+                if ($input["redirect_uri"]
+                    && !$this->validateRedirectUri(
+                        $input["redirect_uri"],
+                        $stored["redirect_uri"]
+                    )
+                ) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_REDIRECT_URI_MISMATCH,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_REDIRECT_URI_MISMATCH,
                         'The redirect URI is missing or do not match'
                     );
                 }
 
                 if ($stored["expires"] < time()) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_GRANT,
                         "The authorization code has expired"
                     );
                 }
@@ -767,24 +759,29 @@ class Server {
             case self::GRANT_TYPE_USER_CREDENTIALS:
                 if (!($this->storage instanceof GrantUserInterface)) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_UNSUPPORTED_GRANT_TYPE
                     );
                 }
 
                 if (!$input["username"] || !$input["password"]) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_REQUEST,
                         'Missing parameters. "username" and "password" required'
                     );
                 }
 
                 $stored = $this->storage->checkUserCredentials(
-                    $client[0], $input['username'], $input['password']
+                    $client[0],
+                    $input['username'],
+                    $input['password']
                 );
 
                 if ($stored === false) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_GRANT
                     );
                 }
                 break;
@@ -792,33 +789,37 @@ class Server {
             case self::GRANT_TYPE_CLIENT_CREDENTIALS:
                 if (!($this->storage instanceof GrantClientInterface)) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_UNSUPPORTED_GRANT_TYPE
                     );
                 }
 
                 if (empty($client[1])) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT,
-                        'The client_secret is mandatory for the '.
-                        '"client_credentials" grant type'
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_CLIENT,
+                        'The client_secret is mandatory for the "client_credentials" grant type'
                     );
                 }
                 // NB: We don't need to check for $stored==false, because it was checked above already
                 $stored = $this->storage->checkClientCredentialsGrant(
-                    $client[0], $client[1]
+                    $client[0],
+                    $client[1]
                 );
                 break;
 
             case self::GRANT_TYPE_REFRESH_TOKEN:
                 if (!($this->storage instanceof RefreshTokensInterface)) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_UNSUPPORTED_GRANT_TYPE
                     );
                 }
 
                 if (!$input["refresh_token"]) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_REQUEST,
                         'No "refresh_token" parameter found'
                     );
                 }
@@ -829,14 +830,16 @@ class Server {
 
                 if ($stored === null || $client[0] != $stored["client_id"]) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_GRANT,
                         'Invalid refresh token'
                     );
                 }
 
                 if ($stored["expires"] < time()) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_INVALID_GRANT,
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_INVALID_GRANT,
                         'Refresh token has expired'
                     );
                 }
@@ -847,12 +850,13 @@ class Server {
             case self::GRANT_TYPE_IMPLICIT:
                 /* TODO: NOT YET IMPLEMENTED */
                 throw new ServerException(
-                    '501 Not Implemented', 'This Server library is not '.
-                    'yet complete. This functionality is not implemented yet.'
+                    '501 Not Implemented',
+                    'This Server library is not yet complete. This functionality is not implemented yet.'
                 );
                 if (!($this->storage instanceof GrantImplicitInterface)) {
                     throw new ServerException(
-                        self::HTTP_BAD_REQUEST, self::ERROR_UNSUPPORTED_GRANT_TYPE
+                        self::HTTP_BAD_REQUEST,
+                        self::ERROR_UNSUPPORTED_GRANT_TYPE
                     );
                 }
 
@@ -881,7 +885,7 @@ class Server {
                 throw new ServerException(
                     self::HTTP_BAD_REQUEST, self::ERROR_INVALID_REQUEST,
                     'Invalid grant_type parameter or parameter missing'
-                    );
+                );
         }
 
         if (!isset($stored["scope"])) {
@@ -889,8 +893,14 @@ class Server {
         }
 
         // Check scope, if provided
-        if ($input["scope"] && (!is_array($stored) || !isset($stored["scope"]) || !$this->checkScope($input["scope"], $stored["scope"]))) {
-            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_SCOPE, 'An unsupported scope was requested.');
+        if ($input["scope"]
+            && (!is_array($stored) || !isset($stored["scope"]) || !$this->checkScope($input["scope"], $stored["scope"]))
+        ) {
+            throw new ServerException(
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_INVALID_SCOPE,
+                'An unsupported scope was requested.'
+            );
         }
 
         $user_id = isset($stored['user_id']) ? $stored['user_id'] : null;
@@ -902,40 +912,41 @@ class Server {
     }
 
     /**
-     * Internal function used to get the client credentials from HTTP basic
-     * auth or POST data.
      *
-     * According to the spec (draft 20), the client_id can be provided in
-     * the Basic Authorization header (recommended) or via GET/POST.
+     * Internal function used to get the client credentials from HTTP basic auth or POST data.
      *
-     * @return
-     * A list containing the client identifier and password, for example
-     * @code
-     * return array(
-     * CLIENT_ID,
-     * CLIENT_SECRET
-     * );
-     * @endcode
+     * According to the spec (draft 20), the client_id can be provided in the Basic Authorization header (recommended)
+     * or via GET/POST.
      *
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-2.4.1
      *
-     * @ingroup oauth2_section_2
+     * A list containing the client identifier and password, for example:
+     * <code>
+     * return array(CLIENT_ID, CLIENT_SECRET);
+     * </code>
+     *
+     * @param array $inputData
+     * @param array $authHeaders
+     * @return array
+     * @throws Exception\ServerException
      */
-    protected function getClientCredentials(array $inputData, array $authHeaders) {
+    protected function getClientCredentials(array $inputData, array $authHeaders)
+    {
 
         // Basic Authentication is used
         if (!empty($authHeaders['PHP_AUTH_USER'])) {
             return array($authHeaders['PHP_AUTH_USER'], $authHeaders['PHP_AUTH_PW']);
         } elseif (empty($inputData['client_id'])) { // No credentials were specified
-            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, 'Client id was not found in the headers or body');
+            throw new ServerException(
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_INVALID_CLIENT,
+                'Client id was not found in the headers or body'
+                );
         } else {
             // This method is not recommended, but is supported by specification
             return array($inputData['client_id'], $inputData['client_secret']);
         }
     }
-
-    // End-user/client Authorization (Section 2 of IETF Draft).
-
 
     /**
      * Pull the authorization request data out of the HTTP request.
@@ -944,21 +955,20 @@ class Server {
      * - The state is OPTIONAL but recommended to enforce CSRF. Draft 21 states, however, that
      * CSRF protection is MANDATORY. You can enforce this by setting the CONFIG_ENFORCE_STATE to true.
      *
-     * @param $inputData - The draft specifies that the parameters should be
-     * retrieved from GET, but you can override to whatever method you like.
-     * @return
-     * The authorization parameters so the authorization server can prompt
-     * the user for approval if valid.
-     *
-     * @throws ServerException
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.1
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-10.12
      *
-     * @ingroup oauth2_section_3
+     * @param array $inputData
+     * @return mixed
+     * @throws Exception\RedirectException
+     * @throws Exception\ServerException
      */
-    public function getAuthorizeParams(array $inputData = null) {
+    public function getAuthorizeParams(array $inputData = null)
+    {
         $filters = array(
-            "client_id" => array("filter" => FILTER_VALIDATE_REGEXP, "options" => array("regexp" => self::CLIENT_ID_REGEXP), "flags" => FILTER_REQUIRE_SCALAR),
+            "client_id" => array("filter" => FILTER_VALIDATE_REGEXP,
+                                 "options" => array("regexp" => self::CLIENT_ID_REGEXP),
+                                 "flags" => FILTER_REQUIRE_SCALAR),
             "response_type" => array("flags" => FILTER_REQUIRE_SCALAR),
             "redirect_uri" => array("filter" => FILTER_SANITIZE_URL),
             "state" => array("flags" => FILTER_REQUIRE_SCALAR),
@@ -972,7 +982,8 @@ class Server {
 
         // Make sure a valid client id was supplied (we can not redirect because we were unable to verify the URI)
         if (!$input["client_id"]) {
-            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, "No client id supplied"); // We don't have a good URI to use
+            // We don't have a good URI to use
+            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, "No client id supplied");
         }
 
         // Get client details
@@ -980,19 +991,38 @@ class Server {
         if ($stored === false) {
             throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_INVALID_CLIENT, "Client id does not exist");
         }
-        // Make sure a valid redirect_uri was supplied. If specified, it must match the stored URI.
-        // @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.1.2
-        // @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1
-        // @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2.1
+        /*
+         * Make sure a valid redirect_uri was supplied. If specified, it must match the stored URI.
+         *
+         * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.1.2
+         * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1
+         * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2.1
+         */
         if (!$input["redirect_uri"] && !$stored["redirect_uri"]) {
-            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_REDIRECT_URI_MISMATCH, 'No redirect URL was supplied or stored.');
+            throw new ServerException(
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_REDIRECT_URI_MISMATCH,
+                'No redirect URL was supplied or stored.'
+            );
         }
         if ($this->getVariable(self::CONFIG_ENFORCE_INPUT_REDIRECT) && !$input["redirect_uri"]) {
-            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_REDIRECT_URI_MISMATCH, 'The redirect URI is mandatory and was not supplied.');
+            throw new ServerException(
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_REDIRECT_URI_MISMATCH,
+                'The redirect URI is mandatory and was not supplied.'
+            );
         }
         // Only need to validate if redirect_uri provided on input and stored.
-        if ($stored["redirect_uri"] && $input["redirect_uri"] && !$this->validateRedirectUri($input["redirect_uri"], $stored["redirect_uri"])) {
-            throw new ServerException(self::HTTP_BAD_REQUEST, self::ERROR_REDIRECT_URI_MISMATCH, 'The redirect URI provided is missing or does not match');
+        if ($stored["redirect_uri"] && $input["redirect_uri"]
+            && !$this->validateRedirectUri(
+                $input["redirect_uri"], $stored["redirect_uri"]
+            )
+        ) {
+            throw new ServerException(
+                self::HTTP_BAD_REQUEST,
+                self::ERROR_REDIRECT_URI_MISMATCH,
+                'The redirect URI provided is missing or does not match'
+            );
         }
 
         // Select the redirect URI
@@ -1000,23 +1030,42 @@ class Server {
 
         // type and client_id are required
         if (!$input["response_type"]) {
-            throw new RedirectException($input["redirect_uri"], self::ERROR_INVALID_REQUEST, 'Invalid or missing response type.', $input["state"]);
+            throw new RedirectException(
+                $input["redirect_uri"],
+                self::ERROR_INVALID_REQUEST,
+                'Invalid or missing response type.',
+                $input["state"]
+            );
         }
 
         // Check requested auth response type against interfaces of storage engine
         $reflect = new ReflectionClass($this->storage);
         if (!$reflect->hasConstant('RESPONSE_TYPE_' . strtoupper($input['response_type']))) {
-            throw new RedirectException($input["redirect_uri"], self::ERROR_UNSUPPORTED_RESPONSE_TYPE, null, $input["state"]);
+            throw new RedirectException(
+                $input["redirect_uri"],
+                self::ERROR_UNSUPPORTED_RESPONSE_TYPE,
+                null,
+                $input["state"]
+            );
         }
 
         // Validate that the requested scope is supported
         if ($input["scope"] && !$this->checkScope($input["scope"], $this->getVariable(self::CONFIG_SUPPORTED_SCOPES))) {
-            throw new RedirectException($input["redirect_uri"], self::ERROR_INVALID_SCOPE, 'An unsupported scope was requested.', $input["state"]);
+            throw new RedirectException(
+                $input["redirect_uri"],
+                self::ERROR_INVALID_SCOPE,
+                'An unsupported scope was requested.',
+                $input["state"]
+            );
         }
 
         // Validate state parameter exists (if configured to enforce this)
         if ($this->getVariable(self::CONFIG_ENFORCE_STATE) && !$input["state"]) {
-            throw new RedirectException($input["redirect_uri"], self::ERROR_INVALID_REQUEST, "The state parameter is required.");
+            throw new RedirectException(
+                $input["redirect_uri"],
+                self::ERROR_INVALID_REQUEST,
+                'The state parameter is required.'
+            );
         }
 
         // Return retrieved client details together with input
@@ -1024,17 +1073,25 @@ class Server {
     }
 
     /**
+     *
+     * @param $is_authorized
+     *
+     * @param $user_id
+     *
+     * @param $params
+     *
+     *
+     */
+    /**
+     *
      * Redirect the user appropriately after approval.
+     *
+     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4
      *
      * After the user has approved or denied the access request the
      * authorization server should call this function to redirect the user
      * appropriately.
      *
-     * @param $is_authorized
-     * true or false depending on whether the user authorized the access.
-     * @param $user_id
-     * Identifier of user who authorized the client
-     * @param $params
      * An associative array as below:
      * - response_type: The requested response: an access token, an
      * authorization code, or both.
@@ -1047,25 +1104,37 @@ class Server {
      * - state: (optional) An opaque value used by the client to maintain
      * state between the request and callback.
      *
-     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4
-     *
-     * @ingroup oauth2_section_4
+     * @param bool $is_authorized (true or false) depending on whether the user authorized the access
+     * @param mixed $user_id Identifier of user who authorized the client
+     * @param array $params
+     * @throws Exception\RedirectException
      */
-    public function finishClientAuthorization($is_authorized, $user_id = null, $params = array()) {
-        $state = $redirect_uri = $client_id = $response_type = $scope = null;
-        // We repeat this, because we need to re-validate. In theory, this could be POSTed
-        // by a 3rd-party (because we are not internally enforcing NONCEs, etc)
+    public function finishClientAuthorization($is_authorized, $user_id = null, $params = array())
+    {
+        $result = array();
+        $state = null;
+        $redirect_uri = null;
+        $client_id = null;
+        $response_type = null;
+        $scope = null;
+        /*
+         *  We repeat this, because we need to re-validate. In theory, this could be POSTed
+         *  by a 3rd-party (because we are not internally enforcing NONCEs, etc)
+         */
         $params = $this->getAuthorizeParams($params);
-
         $params += array('scope' => null, 'state' => null);
         extract($params);
-
         if ($state !== null) {
             $result["query"]["state"] = $state;
         }
 
         if ($is_authorized === false) {
-            throw new RedirectException($redirect_uri, self::ERROR_USER_DENIED, "The user denied access to your application", $state);
+            throw new RedirectException(
+                $redirect_uri,
+                self::ERROR_USER_DENIED,
+                'The user denied access to your application',
+                $state
+            );
         } else {
             if ($response_type == self::RESPONSE_TYPE_AUTH_CODE) {
                 $result["query"]["code"] = $this->createAuthCode($client_id, $user_id, $redirect_uri, $scope);
@@ -1077,23 +1146,17 @@ class Server {
         $this->doRedirectUriCallback($redirect_uri, $result);
     }
 
-    // Other/utility functions.
-
-
     /**
      * Redirect the user agent.
      *
      * Handle both redirect for success or error response.
      *
-     * @param $redirect_uri
-     * An absolute URI to which the authorization server will redirect
-     * the user-agent to when the end-user authorization step is completed.
-     * @param $params
-     * Parameters to be pass though buildUri().
-     *
-     * @ingroup oauth2_section_4
+     * @param string $redirect_uri An absolute URI to which the authorization server will redirect the user-agent to
+     * when the end-user authorization step is completed.
+     * @param array $params Parameters to be pass though buildUri().
      */
-    private function doRedirectUriCallback($redirect_uri, $params) {
+    private function doRedirectUriCallback($redirect_uri, $params)
+    {
         header("HTTP/1.1 " . self::HTTP_FOUND);
         header("Location: " . $this->buildUri($redirect_uri, $params));
         exit();
@@ -1102,40 +1165,34 @@ class Server {
     /**
      * Build the absolute URI based on supplied URI and parameters.
      *
-     * @param $uri
-     * An absolute URI.
-     * @param $params
-     * Parameters to be append as GET.
-     *
-     * @return
-     * An absolute URI with supplied parameters.
-     *
-     * @ingroup oauth2_section_4
+     * @param string  $uri An absolute URI.
+     * @param array $params Parameters to be append as GET.
+     * @return string An absolute URI with supplied parameters.
      */
-    private function buildUri($uri, $params) {
+    private function buildUri($uri, $params)
+    {
         $uri = Zend_Uri_Http::fromString($uri);
         $uri->setQuery($params['fragment']);
-        foreach ( $params as $k => $v ) {
+        foreach ($params as $v) {
             $uri->setQuery($v);
         }
-        return (string) $uri;
+        return (string)$uri;
     }
 
     /**
      * Handle the creation of access token, also issue refresh token if support.
      *
-     * This belongs in a separate factory, but to keep it simple, I'm just
-     * keeping it here.
-     *
-     * @param $client_id
-     * Client identifier related to the access token.
-     * @param $scope
-     * (optional) Scopes to be stored in space-separated string.
+     * This belongs in a separate factory, but to keep it simple, I'm just keeping it here.
      *
      * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-5
-     * @ingroup oauth2_section_5
+     *
+     * @param $client_id Client identifier related to the access token.
+     * @param $user_id
+     * @param null $scope (optional) Scopes to be stored in space-separated string.
+     * @return array
      */
-    protected function createAccessToken($client_id, $user_id, $scope = null) {
+    protected function createAccessToken($client_id, $user_id, $scope = null)
+    {
 
         $token = array(
             "access_token" => $this->genAccessToken(),
@@ -1144,12 +1201,24 @@ class Server {
             "scope" => $scope
         );
 
-        $this->storage->setAccessToken($token["access_token"], $client_id, $user_id, time() + $this->getVariable(self::CONFIG_ACCESS_LIFETIME), $scope);
+        $this->storage->setAccessToken(
+            $token["access_token"],
+            $client_id,
+            $user_id,
+            time() + $this->getVariable(self::CONFIG_ACCESS_LIFETIME),
+            $scope
+        );
 
         // Issue a refresh token also, if we support them
         if ($this->storage instanceof RefreshTokensInterface) {
             $token["refresh_token"] = $this->genAccessToken();
-            $this->storage->setRefreshToken($token["refresh_token"], $client_id, $user_id, time() + $this->getVariable(self::CONFIG_REFRESH_LIFETIME), $scope);
+            $this->storage->setRefreshToken(
+                $token["refresh_token"],
+                $client_id,
+                $user_id,
+                time() + $this->getVariable(self::CONFIG_REFRESH_LIFETIME),
+                $scope
+            );
 
             // If we've granted a new refresh token, expire the old one
             if ($this->oldRefreshToken) {
@@ -1164,40 +1233,42 @@ class Server {
     /**
      * Handle the creation of auth code.
      *
-     * This belongs in a separate factory, but to keep it simple, I'm just
-     * keeping it here.
+     * This belongs in a separate factory, but to keep it simple, I'm just keeping it here.
      *
-     * @param $client_id
-     * Client identifier related to the access token.
-     * @param $redirect_uri
-     * An absolute URI to which the authorization server will redirect the
-     * user-agent to when the end-user authorization step is completed.
-     * @param $scope
-     * (optional) Scopes to be stored in space-separated string.
-     *
-     * @ingroup oauth2_section_4
+     * @param mixed $client_id Client identifier related to the access token.
+     * @param mixed $user_id
+     * @param string $redirect_uri An absolute URI to which the authorization server will redirect the user-agent to
+     * when the end-user authorization step is completed.
+     * @param null $scope (optional) Scopes to be stored in space-separated string.
+     * @return string
      */
-    private function createAuthCode($client_id, $user_id, $redirect_uri, $scope = null) {
+    private function createAuthCode($client_id, $user_id, $redirect_uri, $scope = null)
+    {
         $code = $this->genAuthCode();
-        $this->storage->setAuthCode($code, $client_id, $user_id, $redirect_uri, time() + $this->getVariable(self::CONFIG_AUTH_LIFETIME), $scope);
+        $this->storage->setAuthCode(
+            $code,
+            $client_id,
+            $user_id,
+            $redirect_uri,
+            time() + $this->getVariable(self::CONFIG_AUTH_LIFETIME),
+            $scope
+        );
         return $code;
     }
 
     /**
      * Generates an unique access token.
      *
-     * Implementing classes may want to override this function to implement
-     * other access token generation schemes.
+     * Implementing classes may want to override this function to implement other access token generation schemes.
      *
-     * @return
-     * An unique access token.
-     *
-     * @ingroup oauth2_section_4
      * @see Server::genAuthCode()
+     * @return string An unique access token.
      */
-    protected function genAccessToken() {
+    protected function genAccessToken()
+    {
         $tokenLen = 40;
-        if (file_exists('/dev/urandom')) { // Get 100 bytes of random data
+        /* Get 100 bytes of random data */
+        if (file_exists('/dev/urandom')) {
             $randomData = file_get_contents('/dev/urandom', false, null, 0, 100) . uniqid(mt_rand(), true);
         } else {
             $randomData = mt_rand() . mt_rand() . mt_rand() . mt_rand() . microtime(true) . uniqid(mt_rand(), true);
@@ -1208,17 +1279,14 @@ class Server {
     /**
      * Generates an unique auth code.
      *
-     * Implementing classes may want to override this function to implement
-     * other auth code generation schemes.
+     * Implementing classes may want to override this function to implement other auth code generation schemes.
      *
-     * @return
-     * An unique auth code.
-     *
-     * @ingroup oauth2_section_4
-     * @see Server::genAccessToken()
+     * @return string An unique auth code.
      */
-    protected function genAuthCode() {
-        return $this->genAccessToken(); // let's reuse the same scheme for token generation
+    protected function genAuthCode()
+    {
+        /* let's reuse the same scheme for token generation */
+        return $this->genAccessToken();
     }
 
     /**
@@ -1228,15 +1296,14 @@ class Server {
      *
      * Implementing classes may need to override this function if need be.
      *
+     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-2.4.1
+     *
      * @todo We may need to re-implement pulling out apache headers to support extended grant types
      *
-     * @return
-     * An array of the basic username and password provided.
-     *
-     * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-2.4.1
-     * @ingroup oauth2_section_2
+     * @return array An array of the basic username and password provided.
      */
-    protected function getAuthorizationHeader() {
+    protected function getAuthorizationHeader()
+    {
         return array(
             'PHP_AUTH_USER' => isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '',
             'PHP_AUTH_PW' => isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : ''
@@ -1251,7 +1318,8 @@ class Server {
      *
      * @ingroup oauth2_section_5
      */
-    private function sendJsonHeaders() {
+    private function sendJsonHeaders()
+    {
         if (php_sapi_name() === 'cli' || headers_sent()) {
             return;
         }
@@ -1262,12 +1330,16 @@ class Server {
 
     /**
      * Internal method for validating redirect URI supplied
+     *
      * @param string $inputUri
      * @param string $storedUri
+     * @return bool
      */
-    protected function validateRedirectUri($inputUri, $storedUri) {
+    protected function validateRedirectUri($inputUri, $storedUri)
+    {
         if (!$inputUri || !$storedUri) {
-            return false; // if either one is missing, assume INVALID
+            /* if either one is missing, assume INVALID */
+            return false;
         }
         return strcasecmp(substr($inputUri, 0, strlen($storedUri)), $storedUri) === 0;
     }
