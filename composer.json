@@ -1,7 +1,6 @@
 {
     "name": "zircote/oauth2",
     "type": "library",
-    "version": "0.23.03",
     "time" : "2012-04-01",
     "description": "OAuth2 Library, this is by no means complete nor is the test coverage optimal, mileage may (will) vary.",
     "keywords": ["library", "OAuth2", "Auth"],
