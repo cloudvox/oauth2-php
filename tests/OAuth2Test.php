@@ -1,5 +1,6 @@
 <?php
 namespace OAuth2Tests;
+
 /**
  * \OAuth2\Server\Server test case.
  */
@@ -8,13 +9,13 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase {
   /**
    * @var \OAuth2\Server\Server
    */
-  private $fixture;
+  protected $fixture;
 
   /**
    * The actual token ID is irrelevant, so choose one:
    * @var string
    */
-  private $tokenId = 'my_token';
+  protected $tokenId = 'my_token';
 
   /**
    * Tests \OAuth2\Server\Server->verifyAccessToken() with a missing token

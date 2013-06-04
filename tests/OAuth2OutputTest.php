@@ -9,7 +9,7 @@ class OAuth2OutputTest extends \PHPUnit_Framework_TestCase {
   /**
    * @var \OAuth2\Server\Server
    */
-  private $fixture;
+  protected $fixture;
 
   /**
    * Tests \OAuth2\Server\Server->grantAccessToken() with successful Auth code grant

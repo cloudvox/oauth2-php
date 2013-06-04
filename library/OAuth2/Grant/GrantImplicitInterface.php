@@ -1,11 +1,13 @@
 <?php
+namespace OAuth2\Grant;
+
 /**
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Grant;
-use OAuth2\Storage\StorageInterface,
-    OAuth2\Server\Server;
+use OAuth2\Storage\StorageInterface;
+use OAuth2\Server\Server;
+
 /**
  * @category OAuth2
  * @package  OAuth2

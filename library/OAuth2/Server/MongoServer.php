@@ -1,11 +1,13 @@
 <?php
+namespace OAuth2\Server;
+
 /**
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Server;
-use OAuth2\Server\Server,
-    OAuth2\Storage\StorageMongo;
+use OAuth2\Server\Server;
+use OAuth2\Storage\StorageMongo;
+
 /**
  * @category OAuth2
  * @package  OAuth2

@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2;
+
 /**
  *
  *
@@ -7,8 +9,8 @@
  * @package  OAuth2
  *
  */
-namespace OAuth2;
 use OAuth2\Exception\Exception;
+
 /**
  * @category OAuth2
  * @package  OAuth2
@@ -353,7 +355,7 @@ abstract class Client {
      * A valid OAuth2.0 JSON decoded access token in associative array, and
      * NULL if not enough parameters or JSON decode failed.
      */
-    private function getAccessTokenFromAuthorizationCode($code) {
+    protected function getAccessTokenFromAuthorizationCode($code) {
         if ($this->getVariable('access_token_uri') && $this->getVariable('client_id') && $this->getVariable('client_secret')) {
             return json_decode($this->makeRequest(
                 $this->getVariable('access_token_uri'),
@@ -386,7 +388,7 @@ abstract class Client {
      * A valid OAuth2.0 JSON decoded access token in associative array, and
      * NULL if not enough parameters or JSON decode failed.
      */
-    private function getAccessTokenFromPassword($username, $password) {
+    protected function getAccessTokenFromPassword($username, $password) {
         if ($this->getVariable('access_token_uri') && $this->getVariable('client_id') && $this->getVariable('client_secret')) {
             return json_decode($this->makeRequest(
                 $this->getVariable('access_token_uri'),
@@ -527,7 +529,7 @@ abstract class Client {
      * @return
      * The cookie name.
      */
-    private function getSessionCookieName() {
+    protected function getSessionCookieName() {
         return 'oauth2_' . $this->getVariable('client_id');
     }
 

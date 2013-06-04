@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2\Server;
+
 /**
  *
  *
@@ -6,19 +8,19 @@
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Server;
-use ReflectionClass,
-    Zend_Uri_Http,
-    OAuth2\Exception\ServerException,
-    OAuth2\Exception\AuthenticateException,
-    OAuth2\Exception\RedirectException,
-    OAuth2\Grant\GrantCodeInterface,
-    OAuth2\Grant\GrantUserInterface,
-    OAuth2\Grant\GrantClientInterface,
-    OAuth2\Grant\GrantImplicitInterface,
-    OAuth2\Grant\GrantExtensionInterface,
-    OAuth2\RefreshTokensInterface,
-    OAuth2\Storage\StorageInterface;
+use ReflectionClass;
+use Zend_Uri_Http;
+use OAuth2\Exception\ServerException;
+use OAuth2\Exception\AuthenticateException;
+use OAuth2\Exception\RedirectException;
+use OAuth2\Grant\GrantCodeInterface;
+use OAuth2\Grant\GrantUserInterface;
+use OAuth2\Grant\GrantClientInterface;
+use OAuth2\Grant\GrantImplicitInterface;
+use OAuth2\Grant\GrantExtensionInterface;
+use OAuth2\RefreshTokensInterface;
+use OAuth2\Storage\StorageInterface;
+
 /**
  * @category OAuth2
  * @package  OAuth2
@@ -47,9 +49,7 @@ use ReflectionClass,
  *
  * @see http://code.google.com/p/oauth2-php/
  * @see https://github.com/quizlet/oauth2-php
- */
-
-/**
+ * 
  * Server.0 draft v20 server-side implementation.
  *
  * @todo Add support for Message Authentication Code (MAC) token type.
@@ -627,7 +627,7 @@ class Server {
      *
      * @ingroup oauth2_section_7
      */
-    private function checkScope($required_scope, $available_scope) {
+    protected function checkScope($required_scope, $available_scope) {
         // The required scope should match or be a subset of the available scope
         if (!is_array($required_scope)) {
             $required_scope = explode(' ', trim($required_scope));
@@ -1091,7 +1091,7 @@ class Server {
      *
      * @ingroup oauth2_section_4
      */
-    private function doRedirectUriCallback($redirect_uri, $params) {
+    protected function doRedirectUriCallback($redirect_uri, $params) {
         header("HTTP/1.1 " . self::HTTP_FOUND);
         header("Location: " . $this->buildUri($redirect_uri, $params));
         exit();
@@ -1110,7 +1110,7 @@ class Server {
      *
      * @ingroup oauth2_section_4
      */
-    private function buildUri($uri, $params) {
+    protected function buildUri($uri, $params) {
         $uri = Zend_Uri_Http::fromString($uri);
         $uri->setQuery($params['fragment']);
         foreach ( $params as $k => $v ) {
@@ -1175,7 +1175,7 @@ class Server {
      *
      * @ingroup oauth2_section_4
      */
-    private function createAuthCode($client_id, $user_id, $redirect_uri, $scope = null) {
+    protected function createAuthCode($client_id, $user_id, $redirect_uri, $scope = null) {
         $code = $this->genAuthCode();
         $this->storage->setAuthCode($code, $client_id, $user_id, $redirect_uri, time() + $this->getVariable(self::CONFIG_AUTH_LIFETIME), $scope);
         return $code;
@@ -1249,7 +1249,7 @@ class Server {
      *
      * @ingroup oauth2_section_5
      */
-    private function sendJsonHeaders() {
+    protected function sendJsonHeaders() {
         if (php_sapi_name() === 'cli' || headers_sent()) {
             return;
         }

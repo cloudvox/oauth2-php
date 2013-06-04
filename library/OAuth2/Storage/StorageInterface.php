@@ -1,4 +1,6 @@
 <?php
+namespace OAuth2\Storage;
+
 /**
  *
  *
@@ -6,7 +8,6 @@
  * @category OAuth2
  * @package  OAuth2
  */
-namespace OAuth2\Storage;
 /**
  * @category OAuth2
  * @package  OAuth2
